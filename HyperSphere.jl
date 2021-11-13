@@ -2,11 +2,18 @@ module HyperSphere
     import Pkg
     using Reexport
 
-    include("CoreHS/CoreHS.jl")
-    @reexport using .CoreHS
+    abstract type AbstractObject end
+
+    export AbstractObject
+
+    Base.show(buffer::IO, x::AbstractObject) = print(buffer, string(x))
+    Base.show(io::IO, x::BitVector) = for i in 1:length(x); print(io, x[i] ? "1" : "0"); end
 
     include("Utilities/Utils.jl")
     @reexport using .Utils
+
+    include("Math/Math.jl")
+    @reexport using .HSMath
 
     include("HyperDimensional/HyperDimensional.jl")
     @reexport using .HyperDimensional
@@ -14,14 +21,12 @@ module HyperSphere
     include("Functions/Functions.jl")
     @reexport using .Functions
 
-    include("Math/Math.jl")
-    @reexport using .HSMath
+    include("NeuralNets/NeuralNet.jl")
+    @reexport using .NeuralNet
 
     function install()
         Pkg.add("Reexport")
+        Pkg.add("Combinatorics")
     end
-end
 
-function memorysizeof(x)
-    return HyperSphere.memorysizeof(x)
 end

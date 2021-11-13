@@ -1,3 +1,5 @@
+export ∏, ∑, ≆, ≊
+
 ≆(x, p) = !isapprox(x, p)
 ≊(x, p) = isapprox(x, p)
 

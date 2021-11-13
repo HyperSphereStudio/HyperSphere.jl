@@ -1,3 +1,5 @@
+export isprime, nextprime, gen_n_primes
+
 function isprime(x::Int64)::Bool
         if x % 2 == 0; return false; end
         for i in 3:2:Int64(ceil(sqrt(x)))

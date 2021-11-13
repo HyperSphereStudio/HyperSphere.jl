@@ -6,8 +6,11 @@ MultiVarPolynomial:
 =#
 
 using LinearAlgebra
+import Main.HyperSphere.Functions
 
-mutable struct MultiVarPolynomial{T <: Real}  <: AbstractMathmaticalFunction{T}
+export MultiVarPolynomial
+
+mutable struct MultiVarPolynomial{T}  <: AbstractMathmaticalFunction{T}
     start_degree::Float32
     end_degree::Float32
     delta_degree::Float32
@@ -21,95 +24,130 @@ mutable struct MultiVarPolynomial{T <: Real}  <: AbstractMathmaticalFunction{T}
     trainableOutputVector::Vector{T}
     trainableMode::Bool
 
-    MultiVarPolynomial(degree, coefficients::Vector{T}) where T = new{T}(0, degree, 1, degree + 1, 1, coefficients)
-
-    function MultiVarPolynomial(inputs::Matrix{T}, outputs::Vector{T}, num_terms, end_degree; precision=10, start_degree=0, trainableMode=false)::MultiVarPolynomial{T} where T
-        num_vars = size(inputs, 1)
-        expansion_count = total_count(num_terms, num_vars)
+    function MultiVarPolynomial{T}(num_vars, num_terms, end_degree; precision=10, start_degree=0.0) where T
         delta_degree = (end_degree - start_degree) / (num_terms - 1)
+        expansion_count = binomial(num_terms + num_vars - 1, num_vars)
         svdmatrix::Matrix{T} = zeros(T, expansion_count, expansion_count)
         output_vector::Vector{T} = zeros(T, expansion_count)
         return new{T}(Float32(start_degree), Float32(end_degree), Float32(delta_degree), Int64(num_terms),
                     Int64(num_vars), Int64(expansion_count), Int32(precision),
-                    _train(inputs, outputs, num_vars, num_terms, expansion_count,
-                        start_degree, delta_degree, precision, svdmatrix, output_vector),
-                    trainableMode ? svdmatrix : zeros(0, 0),
-                    trainableMode ? output_vector : zeros(0),
-                    trainableMode)
+                    zeros(T, expansion_count), svdmatrix, output_vector, true)
     end
 
-    function (f::MultiVarPolynomial{T})(args::Vector{T})::T where T <: Real
-        product_sum::T = 0
-        uhditer(f.num_vars, f.num_terms,
-            function(indexes, counter)
-                product = f.coefficients[counter]
+    function MultiVarPolynomial{T}(inputs::AbstractMatrix{T2}, outputs::AbstractArray{T3}, num_terms, end_degree; precision=10, start_degree=0.0, trainableMode=false)::MultiVarPolynomial{T} where T where T2 where T3
+        poly = MultiVarPolynomial{T}(size(inputs, 2), num_terms,
+            end_degree, precision = precision, start_degree = start_degree)
+        train(poly, inputs, outputs)
+        if !poly.trainableMode; inactivate_training(poly); end
+        poly
+    end
+
+    function (f::MultiVarPolynomial{T})(args::AbstractArray{T2}; Data_Type::Type=T) where T where T2
+        product_sum::Data_Type = Data_Type(0)
+        power_iterator(T, f.num_vars, f.num_terms, f.start_degree, f.delta_degree,
+            function(degrees, counter)
+                product = Data_Type(f.coefficients[counter])
                 for var in 1:f.num_vars
-                    degree = (indexes[var] - 1) * f.delta_degree + f.start_degree
-                    product *= args[var] ^ degree
+                    degree = Data_Type(args[var])
+                    product *= degree ^ degree
                 end
                 product_sum += product
+                return false
             end)
         product_sum
     end
 
-    function Base.string(x::MultiVarPolynomial)
-        str = "Multi Variable Polynomial\n" * functionheader(x, x.num_vars)
+    function Base.string(x::MultiVarPolynomial{T}) where T
+        str = "\nMulti Variable Polynomial\n" * functionheader(x, x.num_vars)
         first_print = true
-        uhditer(x.num_vars, x.num_terms,
-            function(indexes, counter)
+        power_iterator(T, x.num_vars, x.num_terms, x.start_degree, x.delta_degree,
+            function(degrees, counter)
                 coeff = x.coefficients[counter]
                 if coeff ≆ 0
                     if !first_print; str *= " + "; else; first_print = false; end
                     str *= string(coeff)
                     for var in 1:x.num_vars
-                        degree = (indexes[var] - 1) * x.delta_degree + x.start_degree
+                        degree = degrees[var]
                         if degree ≆ 0
                             str *= "x_" * string(var)
                             if degree ≆ 1; str *= "^" * string(degree); end
                         end
                     end
                 end
+                return false
             end)
-        str * "\nMemory Size:" * string(memorysizeof(x)) * "\n"
+        str * "\nMemory Size:" * string(sizeof(x)) * "\n"
+    end
+
+    function Base.sizeof(x::MultiVarPolynomial{T}) where T
+        return sizeof(MultiVarPolynomial{T}) + sizeof(x.coefficients) + (x.trainableMode ? (sizeof(x.trainableOutputVector) + sizeof(x.trainableSVDMatrix)) : 0)
     end
 end
 
-function memorysizeof(f::MultiVarPolynomial{T}) where T
-    return sizeof(f) + sizeof(f.coefficients) + sizeof(f.trainableSVDMatrix) + sizeof(f.trainableOutputVector)
+function Functions.inactivate_training(poly::MultiVarPolynomial{T}) where T
+    poly.trainableMode = false
+    poly.trainableSVDMatrix = zeros(0, 0)
+    poly.trainableOutputVector = zeros(0)
 end
 
-function train(f::MultiVarPolynomial{T}, inputs::Matrix{T}, outputs::Vector{T}) where T <: Real
+function Functions.train(f::MultiVarPolynomial{T}, inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}) where T where T2 where T3
     if !f.trainableMode; error("Polynomial is not trainable"); end
-    f.coefficients = _train(inputs, outputs, f.num_vars, f.num_terms, f.expansion_count,
-        f.start_degree, f.delta_degree, f.precision, f.trainableSVDMatrix, f.trainableOutputVector)
+    f.coefficients = _train(inputs, outputs, f.num_vars, f.num_terms, f.start_degree, f.delta_degree, f.precision, f.trainableSVDMatrix, f.trainableOutputVector)
 end
 
-function _train(inputs::Matrix{T}, outputs::Vector{T}, num_vars, num_terms, expansion_count, start_degree, delta_degree, precision, svdmatrix::Matrix{T}, output_vector::Vector{T}) where T <: Real
-    if size(inputs, 2) != length(outputs); error("Data Mismatch. InputSize:" * string(size(inputs, 1)) * " Output Size:" * string(length(outputs))); end
-    if size(inputs, 1) != num_vars; error("Dimension Mismatch: Var Input Size:" * string(size(inputs, 1)) * " Cached Var Size:" * string(num_vars)); end
-    if length(outputs) != 0
-        uhditer(num_vars, num_terms,
-            function(indexes, row)
-                uhditer(num_vars, num_terms,
-                    function (indexes2, col)
-                        if row <= col
-                            product_sum = svdmatrix[row, col]
-                            if row == 1; output_product_sum = output_vector[col]; end
-                            for data_entry_index in 1:length(outputs)
-                                product = 1
-                                for var in 1:num_vars
-                                    degree = ((indexes[var] + indexes2[var] - 2) * delta_degree + start_degree)
-                                    product *= inputs[var, data_entry_index] ^ degree
+"""Iterates through all the power combinations of the polynomial
+"""
+function power_iterator(T::Type, num_vars, num_terms, start_degree, delta_degree, iteration_lambda::Function)
+    running_count = 1
+    max_vector = zeros(typeof(num_vars), num_vars)
+    sum_vector = zeros(typeof(num_vars), num_vars)
+    index_vector = zeros(typeof(num_vars), num_vars)
+    power_vector = zeros(T, num_vars)
+    for i in 0:(num_terms - 1)
+        partition(i, num_vars,
+            function(indexes, idx)
+                power_vector .= (indexes .* delta_degree) .+ start_degree
+                b = iteration_lambda(power_vector, running_count)
+                running_count += 1
+                return b
+            end, max_vector=max_vector, sum_vector=sum_vector, index_vector=index_vector)
+        fill!(max_vector, 0)
+        fill!(sum_vector, 0)
+        fill!(index_vector, 0)
+    end
+end
+
+function _train(inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}, num_vars, num_terms, start_degree, delta_degree, precision, svdmatrix::Matrix{T}, output_vector::Vector{T}) where T where T2 where T3
+    if size(inputs, 1) != length(outputs); error("Data Mismatch. InputSize:" * string(size(inputs, 1)) * " Output Size:" * string(length(outputs))); end
+    if size(inputs, 2) < num_vars; error("Dimension Mismatch: Var Input Size:" * string(size(inputs, 2)) * " Cached Var Size:" * string(num_vars)); end
+    if length(outputs) == 0; return; end
+    power_iterator(T, num_vars, num_terms, start_degree, delta_degree,
+        function(row_powers, row)
+            power_iterator(T, num_vars, num_terms, start_degree, delta_degree,
+                function(col_powers, col)
+                    if col >= row
+                        summed_degrees = row_powers + col_powers
+                        product_sum = svdmatrix[row, col]
+                        if row == 1; output_product_sum = output_vector[col]; end
+                        for data_entry_index in 1:length(outputs)
+                            product::T = 1
+                            for var in 1:num_vars
+                                degree = summed_degrees[var]
+                                product *= inputs[data_entry_index, var] ^ degree
+                                if product == 0
+                                    break
                                 end
-                                product_sum += product
-                                if row == 1; output_product_sum += outputs[data_entry_index] * product; end
                             end
-                            svdmatrix[row, col] = product_sum
-                            svdmatrix[col, row] = product_sum
-                            if row == 1; output_vector[col] = output_product_sum; end
+                            product_sum += product
+                            if row == 1; output_product_sum += outputs[data_entry_index] * product; end
                         end
-                    end)
-            end)
-        end
-        round.(pinv(svdmatrix) * output_vector, digits = precision)
+                        svdmatrix[row, col] = product_sum
+                        svdmatrix[col, row] = product_sum
+                        if row == 1; output_vector[col] = output_product_sum; end
+                    end
+                    return false
+                end)
+            return false
+        end)
+    round.(pinv(svdmatrix) * output_vector, digits = precision)
 end
