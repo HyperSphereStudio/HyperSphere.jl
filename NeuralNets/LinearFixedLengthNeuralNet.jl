@@ -3,26 +3,22 @@ import Main.HyperSphere.Functions
 import Main.HyperSphere.Utils
 import Main.HyperSphere.HyperDimensional
 
-export LinearFixedLengthNeuralNet, basic_poly_initializer, reals_to_real
-
-
+export LinearFixedLengthNeuralNet, basic_poly_initializer, reals_to_reals
 
 function basic_poly_initializer(num_terms, end_degree; precision=10, start_degree=0.0, Data_Type=Float32)
     (input_length, idx) -> Functions.MultiVarPolynomial{Data_Type}(input_length + idx, num_terms, end_degree, precision = precision, start_degree = start_degree)
 end
 
-function reals_to_real(num_polys, input_length, num_terms, end_degree; precision=10, start_degree=0.0, Data_Type=Float32)
+function reals_to_reals(num_polys, input_length, num_terms, end_degree; output_length = 1, precision=10, start_degree=0.0, Data_Type=Float32)
     return HyperSphere.LinearFixedLengthNeuralNet{Data_Type}(num_polys, input_length,
         function (value, output_vector, index)
             push!(output_vector, value)
-            return true
+            return length(output_vector) == output_length
         end,
-        function (value, row, col, is_terminating)
-            return value
-        end, HyperSphere.basic_poly_initializer(num_terms, end_degree, precision = precision, start_degree = start_degree, Data_Type = Data_Type))
+        (value, row, col, is_terminating) -> value, HyperSphere.basic_poly_initializer(num_terms, end_degree, precision = precision, start_degree = start_degree, Data_Type = Data_Type))
 end
 
-struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet
+struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet{T}
     polynomials::Array{Functions.MultiVarPolynomial{T}, 1}
     inputlength
     mapping_function::Function
@@ -36,7 +32,7 @@ struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet
         mapping_function::Function,
         demapping_function::Function,
         poly_initializer::Function) where T
-        return new{T}([poly_initializer(inputlength, i) for i in 1:num_polys], inputlength, mapping_function, demapping_function)
+        return new{T}([poly_initializer(inputlength, i) for i in 1:num_polys ], inputlength, mapping_function, demapping_function)
     end
 
     function (f::LinearFixedLengthNeuralNet{T})(args::AbstractArray{T2}; Data_Type::Type = T) where T where T2
@@ -48,10 +44,10 @@ struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet
         while true
             value = 0
             for i in 1:length(f.polynomials)
-                inputs[arglen + 1] = i - 1
+                inputs[f.inputlength + 1] = i - 1
                 value = f.polynomials[i](inputs, Data_Type = Data_Type)
                 if i != length(f.polynomials)
-                    inputs[arglen + i + 1] = value
+                    inputs[arglen + i] = value
                 end
             end
             if f.mapping_function(value, outputs, index); return outputs; end
@@ -61,6 +57,14 @@ struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet
 
     function Base.string(x::LinearFixedLengthNeuralNet)
         return "Linear Fixed Length Neural Net\n\tPolynomial Count:" * string(length(x.polynomials)) * "\tInput Length:" * string(x.inputlength) * "\n" * string(x.polynomials)
+    end
+
+    function Base.sizeof(x::LinearFixedLengthNeuralNet{T}) where T
+        sum = sizeof(LinearFixedLengthNeuralNet{T})
+        for poly in x.polynomials
+            sum += sizeof(poly)
+        end
+        return sum
     end
 end
 
@@ -78,10 +82,8 @@ function Functions.train(f::LinearFixedLengthNeuralNet{T}, input_data::AbstractM
     if size(input_data, 2) < f.inputlength
         HyperDimensional.DimensionException("Data Mismatch", data_length, f.inputlength)
     end
-
-    input_vector = Array{T, 1}(undef, f.inputlength + length(f.polynomials))
     output_training_vector = Array{OutDataType, 1}(undef, data_length)
-    input_training_matrix = Array{T, 2}(undef, data_length, f.inputlength + length(f.polynomials) + 1)
+    input_training_matrix = Array{T, 2}(undef, data_length, f.inputlength + length(f.polynomials))
     index = 1
 
     for row in 1:data_length
@@ -91,22 +93,26 @@ function Functions.train(f::LinearFixedLengthNeuralNet{T}, input_data::AbstractM
     end
 
     while data_length > 0
-        input_vector[f.inputlength + 1] = index - 1
-        input_training_matrix[1:end, f.inputlength + 1] .= index - 1
         terminating_indexes = []
         for i in 1:data_length
             output_training_vector[i] = f.demapping_function(output_data[i][index], i, index, index == length(output_data[i]))
             if index == length(output_data[i]); push!(terminating_indexes, i); end
         end
-        Functions.train(f.polynomials[index], input_training_matrix, output_training_vector)
-        for i in 1:data_length
-            input_vector[(f.inputlength + 2):end] = input_training_matrix[i, (f.inputlength + 2):end]
-            if i != data_length
-                input_training_matrix[i, f.inputlength + 1 + index] = f.polynomials[index](input_vector)
+
+        for i in 1:length(f.polynomials)
+            input_training_matrix[1:end, f.inputlength + 1] .= index - 1
+            Functions.train(f.polynomials[i], input_training_matrix, output_training_vector)
+            println(f.polynomials[i], "\n\t", input_training_matrix, "\n\t\t", output_training_vector, "\n\t\t", input_training_matrix[1:end, 1:(f.inputlength + i - 1)])
+            if i != length(f.polynomials)
+                for d in 1:data_length
+                    input_training_matrix[d, f.inputlength + i + 1] = f.polynomials[i](input_training_matrix[d, 1:(f.inputlength + i - 1)])
+                end
             end
         end
-        HyperDimensional.buffer_remove_dimension_parts(output_training_vector, terminating_indexes, data_length)
-        data_length = HyperDimensional.buffer_remove_dimension_parts(input_training_matrix, terminating_indexes, data_length)[2]
+
+        HyperDimensional.buffer_remove_row(output_training_vector, terminating_indexes, data_length)
+        HyperDimensional.buffer_remove_row(output_data, terminating_indexes, data_length)
+        data_length = HyperDimensional.buffer_remove_row(input_training_matrix, terminating_indexes, data_length)[2]
         index += 1
     end
 end

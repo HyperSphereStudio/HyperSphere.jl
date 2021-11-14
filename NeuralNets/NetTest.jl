@@ -33,11 +33,15 @@ println("HI:", @allocated net = HyperSphere.LinearFixedLengthNeuralNet{Float32}(
     HyperSphere.basic_poly_initializer(Float32, 3, 2.0)))
 """
 
-
-#net = HyperSphere.reals_to_real(1, 1, 3, 2.0)
-
+net = HyperSphere.reals_to_reals(2, 1, 3, 2.0)
 inputMat = zeros(Float32, 10, 1)
 for i in 1:size(inputMat, 1)
     inputMat[i, 1] = i
 end
-#HyperSphere.train(net, inputMat, Float32[(i + 1) for i in 1:10])
+
+function f(x)
+    return 2 * x
+end
+
+HyperSphere.train(net, inputMat, Float32[f(i) for i in 1:size(inputMat, 1)])
+println("X:", inputMat[1, 1], "\tY:", f(inputMat[1, 1]), "\tY':", net(inputMat[1, 1]))

@@ -13,5 +13,6 @@ module HyperDimensional
 
     include("Iteration.jl")
     include("Math.jl")
+    include("ArrayUtils.jl")
 
 end
