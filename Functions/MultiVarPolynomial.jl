@@ -11,13 +11,15 @@ import Main.HyperSphere.Functions
 export MultiVarPolynomial
 
 mutable struct MultiVarPolynomial{T}  <: AbstractMathmaticalFunction{T}
-    start_degree::Float32
-    end_degree::Float32
-    delta_degree::Float32
-    num_terms::Int64
-    num_vars::Int64
-    expansion_count::Int64
-    precision::Int32
+    start_degree::T
+    end_degree::T
+    delta_degree::T
+    hyper_degree::T
+    condition_number::T
+    num_terms
+    num_vars
+    expansion_count
+    precision
     coefficients::Vector{T}
 
     trainableSVDMatrix::Matrix{T}
@@ -29,7 +31,7 @@ mutable struct MultiVarPolynomial{T}  <: AbstractMathmaticalFunction{T}
         expansion_count = binomial(num_terms + num_vars - 1, num_vars)
         svdmatrix::Matrix{T} = zeros(T, expansion_count, expansion_count)
         output_vector::Vector{T} = zeros(T, expansion_count)
-        return new{T}(Float32(start_degree), Float32(end_degree), Float32(delta_degree), Int64(num_terms),
+        return new{T}(T(start_degree), T(end_degree), T(delta_degree), T(0), T(0), Int64(num_terms),
                     Int64(num_vars), Int64(expansion_count), Int32(precision),
                     zeros(T, expansion_count), svdmatrix, output_vector, true)
     end
@@ -48,8 +50,8 @@ mutable struct MultiVarPolynomial{T}  <: AbstractMathmaticalFunction{T}
             function(degrees, counter)
                 product = Data_Type(f.coefficients[counter])
                 for var in 1:f.num_vars
-                    degree = Data_Type(args[var])
-                    product *= degree ^ degree
+                    product *= Data_Type(args[var]) ^ Data_Type(degrees[var])
+                    if product == 0; break; end
                 end
                 product_sum += product
                 return false
@@ -92,7 +94,16 @@ end
 
 function Functions.train(f::MultiVarPolynomial{T}, inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}) where T where T2 where T3
     if !f.trainableMode; error("Polynomial is not trainable"); end
-    f.coefficients = _train(inputs, outputs, f.num_vars, f.num_terms, f.start_degree, f.delta_degree, f.precision, f.trainableSVDMatrix, f.trainableOutputVector)
+    training_out = _train(inputs, outputs, f.num_vars, f.num_terms, f.start_degree, f.delta_degree, f.precision, f.trainableSVDMatrix, f.trainableOutputVector)
+    f.coefficients = training_out[1]
+    degree_sum::T = T(0)
+    power_iterator(T, f.num_vars, f.num_terms, f.start_degree, f.delta_degree,
+        function(degrees, idx)
+            degree_sum += f.coefficients[idx] * sum(degrees)
+            return false
+        end)
+    f.hyper_degree = sum(f.coefficients) / degree_sum
+    f.condition_number = training_out[2]
 end
 
 """Iterates through all the power combinations of the polynomial
@@ -149,5 +160,6 @@ function _train(inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}, num_var
                 end)
             return false
         end)
-    round.(pinv(svdmatrix) * output_vector, digits = precision)
+    inv_svd = pinv(svdmatrix)
+    (round.(inv_svd * output_vector, digits = precision), norm(svdmatrix) * norm(inv_svd))
 end

@@ -2,11 +2,12 @@ import Main.HyperSphere
 import Main.HyperSphere.Functions
 import Main.HyperSphere.Utils
 import Main.HyperSphere.HyperDimensional
+import Main.HyperSphere.HSMath
 
 export LinearFixedLengthNeuralNet, basic_poly_initializer, reals_to_reals
 
 function basic_poly_initializer(num_terms, end_degree; precision=10, start_degree=0.0, Data_Type=Float32)
-    (input_length, idx) -> Functions.MultiVarPolynomial{Data_Type}(input_length + idx, num_terms, end_degree, precision = precision, start_degree = start_degree)
+    input_length -> Functions.MultiVarPolynomial{Data_Type}(input_length, num_terms, end_degree, precision = precision, start_degree = start_degree)
 end
 
 function reals_to_reals(num_polys, input_length, num_terms, end_degree; output_length = 1, precision=10, start_degree=0.0, Data_Type=Float32)
@@ -19,35 +20,36 @@ function reals_to_reals(num_polys, input_length, num_terms, end_degree; output_l
 end
 
 struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet{T}
+    
     polynomials::Array{Functions.MultiVarPolynomial{T}, 1}
-    inputlength
+    input_length
     mapping_function::Function
     demapping_function::Function
 
     """mapping function (polynomial_output::Number, output_vector::AbstractVector, polynomial_index::Number) -> real_output::Number
        demapping function (real_output::Number, output_row_index::Number, output_col_index::Number, is_terminating::Bool) -> polynomial_output::Number
-       poly_initializer (input_length::Integer, poly_idx::Integer) -> Functions.MultiVarPolynomial{Poly_Data_Type}
+       poly_initializer (input_length::Integer) -> Functions.MultiVarPolynomial{Poly_Data_Type}
     """
-    function LinearFixedLengthNeuralNet{T}(num_polys, inputlength,
+    function LinearFixedLengthNeuralNet{T}(num_polys, input_length,
         mapping_function::Function,
         demapping_function::Function,
         poly_initializer::Function) where T
-        return new{T}([poly_initializer(inputlength, i) for i in 1:num_polys ], inputlength, mapping_function, demapping_function)
+        return new{T}([poly_initializer(input_length + i) for i in 1:num_polys ], input_length, mapping_function, demapping_function)
     end
 
     function (f::LinearFixedLengthNeuralNet{T})(args::AbstractArray{T2}; Data_Type::Type = T) where T where T2
         outputs = Vector{Data_Type}(undef, 0)
-        inputs = Vector{T}(undef, f.inputlength + length(f.polynomials))
-        arglen = length(args)
-        index = 0
-        for v in 1:arglen; inputs[v] = T(args[v]); end
+        inputs = Vector{T}(undef, f.input_length + length(f.polynomials))
+        index = 1
+
+        for v in 1:length(args); inputs[v] = T(args[v]); end
         while true
             value = 0
             for i in 1:length(f.polynomials)
-                inputs[f.inputlength + 1] = i - 1
+                inputs[f.input_length + 1] = i - 1
                 value = f.polynomials[i](inputs, Data_Type = Data_Type)
                 if i != length(f.polynomials)
-                    inputs[arglen + i] = value
+                    inputs[f.input_length + i + 1] = HSMath.powi(value, f.polynomials[i].hyper_degree)
                 end
             end
             if f.mapping_function(value, outputs, index); return outputs; end
@@ -56,7 +58,11 @@ struct LinearFixedLengthNeuralNet{T} <: AbstractNeuralNet{T}
     end
 
     function Base.string(x::LinearFixedLengthNeuralNet)
-        return "Linear Fixed Length Neural Net\n\tPolynomial Count:" * string(length(x.polynomials)) * "\tInput Length:" * string(x.inputlength) * "\n" * string(x.polynomials)
+        str = "Linear Fixed Length Neural Net\nPolynomial Count:" * string(length(x.polynomials)) * "\tInput Length:" * string(x.input_length) * "\n"
+        for idx in 1:length(x.polynomials)
+            str *= "Polynomial #$idx:" * string(x.polynomials[idx]) * "\n"
+        end
+        str
     end
 
     function Base.sizeof(x::LinearFixedLengthNeuralNet{T}) where T
@@ -74,20 +80,20 @@ function Functions.inactivate_training(f::LinearFixedLengthNeuralNet{T}) where T
     end
 end
 
-function Functions.train(f::LinearFixedLengthNeuralNet{T}, input_data::AbstractMatrix{T2}, output_data::AbstractArray{T3}; OutDataType::Type = T)  where T where T2 where T3
+function Functions.train(f::LinearFixedLengthNeuralNet{T}, input_data::AbstractMatrix{T2}, output_data::AbstractArray{T3}; Data_Type::Type = T)  where T where T2 where T3
     data_length = size(input_data, 1)
     if data_length != length(output_data)
         HyperDimensional.DimensionException("Data Mismatch", data_length, length(output_data))
     end
-    if size(input_data, 2) < f.inputlength
-        HyperDimensional.DimensionException("Data Mismatch", data_length, f.inputlength)
+    if size(input_data, 2) < f.input_length
+        HyperDimensional.DimensionException("Data Mismatch", data_length, f.input_length)
     end
-    output_training_vector = Array{OutDataType, 1}(undef, data_length)
-    input_training_matrix = Array{T, 2}(undef, data_length, f.inputlength + length(f.polynomials))
-    index = 1
+    output_training_vector = Array{Data_Type, 1}(undef, data_length)
+    input_training_matrix = zeros(T, data_length, f.input_length + length(f.polynomials))
 
+    index = 1
     for row in 1:data_length
-        for col in 1:f.inputlength
+        for col in 1:f.input_length
             input_training_matrix[row, col] = T(input_data[row, col])
         end
     end
@@ -100,12 +106,11 @@ function Functions.train(f::LinearFixedLengthNeuralNet{T}, input_data::AbstractM
         end
 
         for i in 1:length(f.polynomials)
-            input_training_matrix[1:end, f.inputlength + 1] .= index - 1
+            input_training_matrix[1:end, f.input_length + 1] .= index
             Functions.train(f.polynomials[i], input_training_matrix, output_training_vector)
-            println(f.polynomials[i], "\n\t", input_training_matrix, "\n\t\t", output_training_vector, "\n\t\t", input_training_matrix[1:end, 1:(f.inputlength + i - 1)])
             if i != length(f.polynomials)
                 for d in 1:data_length
-                    input_training_matrix[d, f.inputlength + i + 1] = f.polynomials[i](input_training_matrix[d, 1:(f.inputlength + i - 1)])
+                    input_training_matrix[d, f.input_length + i + 1] = HSMath.powi(f.polynomials[i](input_training_matrix[d, 1:(f.input_length + i)]), f.polynomials[i].hyper_degree)
                 end
             end
         end

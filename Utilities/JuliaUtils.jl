@@ -1,6 +1,6 @@
 export @nullc, eqerror, getbit, setbit, bytesof,
 matrixbytesof, objectof, matrixobjectof, issupertype, matrixbitsof, bitsof,
-arraybytesof, arrayobjectof, arraybitsof
+arraybytesof, arrayobjectof, arraybitsof, pass_func
 
 macro nullc(value, if_null)
       return esc(:($value == nothing ? $if_null : $value))

@@ -4,7 +4,6 @@ using Main.HyperSphere.HSMath
 
 export hditer, uhditer, flatten_uhditer, flatten_hditer, total_count, sum_comb, unflatten_uhditer, unflatten_hditer, partition, partition_test, partition
 
-
 """ High Dimensional Iteration
       Performs an iteration over length(param_1) dimensions, with the value at param_1 being number of times in that dimension
       Leftward direction means that the direction of iteration is going left

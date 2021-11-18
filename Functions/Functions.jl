@@ -18,5 +18,7 @@ module Functions
     using .HyperDimensional
 
     include("AbstractMathmaticalFunction.jl")
+    include("PolynomialRegression.jl")
     include("MultiVarPolynomial.jl")
+    include("SeriesApprox.jl")
 end

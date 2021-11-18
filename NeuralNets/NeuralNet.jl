@@ -1,13 +1,9 @@
 module NeuralNet
     import Main.HyperSphere.Functions
 
-    abstract type AbstractNeuralNet{T} <: Functions.AbstractMathmaticalFunction{T} end
+    abstract type AbstractNeuralNet{Data_Type} <: Functions.AbstractMathmaticalFunction{Data_Type} end
     export AbstractNeuralNet
 
-    #include("FixedLengthNeuralNet.jl")
-    #export FixedLengthNeuralNet, train, inactivate_training
-
-    include("LinearFixedLengthNeuralNet.jl")
-
-    #include("AbitraryLengthNeuralNet.jl")
+    include("Layer.jl")
+    include("Gen3Net.jl")
 end

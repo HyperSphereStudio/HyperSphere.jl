@@ -27,6 +27,7 @@ module HyperSphere
     function install()
         Pkg.add("Reexport")
         Pkg.add("Combinatorics")
+        Pkg.add("BlackBoxOptim")
     end
 
 end
