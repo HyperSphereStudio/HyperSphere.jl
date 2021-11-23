@@ -11,6 +11,14 @@ mutable struct Gen3NetDesigner{T}
         demapper::Function
         error_function::Function
         optimizer::Function
+
+        function Gen3NetDesigner(input_length::T, output_length::T; mapper=x->x, demapper=x->x, error_function=NeuralNet.meanabserr, optimizer=nothing) where T
+                new{T}(input_length, output_length, Vector{Layer}(undef, 0), zeros(T, 0), mapper, demapper, error_function, optimizer)
+        end
+
+        function (d::Gen3NetDesigner{T})() where T
+                Gen3Net{T}(d)
+        end
 end
 
 struct Gen3Net{T} <: AbstractNeuralNet{T}
@@ -46,5 +54,5 @@ struct Gen3Net{T} <: AbstractNeuralNet{T}
 end
 
 function train(f::Gen3Net{T}, input_data::AbstractMatrix{T2}, output_data::AbstractArray{T3}; Data_Type::Type = T)  where T where T2 where T3
-     
+        f.constants = f.optimizer(Data_Type, f.constants, f.error_function(input_data, f.demapper.(output_data)))
 end
