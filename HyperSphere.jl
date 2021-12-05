@@ -31,3 +31,6 @@ module HyperSphere
     end
 
 end
+
+
+clear() = clearconsole()
