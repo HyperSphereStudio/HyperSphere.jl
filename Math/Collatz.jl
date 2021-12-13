@@ -60,16 +60,10 @@ function apply(f, x, m, n=1)
     return x
 end
 
-function innerInverseCollatz(n; Type=Float64)
-    f = length(n)
-    inner_sum::Type = 0
-    for i in 2:f
-        inner_sum += (2 ^ sum_array(n, i, f - 1)) * 3 ^ (i - 2)
+function innerInverseCollatz(g::Function, len)
+    sum = 0
+    for w in 1:len
+        sum += (2 ^ g(w)) * (3 ^ (w - 2))
     end
-    return 2 ^ sum_array(n, 1, f - 1) - inner_sum
-end
-
-for i in 1:2:40
-    val = collatz_conj(i)[1];
-    println("$i $val ", getInside(val))
+    2 ^ g(0) - sum
 end
