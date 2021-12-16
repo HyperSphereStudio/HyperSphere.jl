@@ -1,6 +1,7 @@
 module HyperSphere
     import Pkg
     using Reexport
+    using Lazy
 
     abstract type AbstractObject end
 
@@ -18,18 +19,23 @@ module HyperSphere
     include("HyperDimensional/HyperDimensional.jl")
     @reexport using .HyperDimensional
 
+    include("Data/Data.jl")
+    @reexport using .Data
+
     include("Functions/Functions.jl")
     @reexport using .Functions
 
-    include("NeuralNets/NeuralNet.jl")
-    @reexport using .NeuralNet
+    include("Vector/Vector.jl")
+    @reexport using .MVector
 
     function install()
+        Pkg.add("BlackBoxOptim")
+        Pkg.add("StaticArrays")
+        Pkg.add("Lazy")
         Pkg.add("Reexport")
         Pkg.add("Combinatorics")
-        Pkg.add("BlackBoxOptim")
+        Pkg.add("BenchmarkTools")
     end
-
 end
 
 

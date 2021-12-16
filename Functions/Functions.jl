@@ -3,10 +3,11 @@ module Functions
 
     export AbstractTrainable, train, inactivate_training, train!
 
+    include("AbstractMathmaticalFunction.jl")
+    abstract type AbstractTrainable{T} <: AbstractMathmaticalFunction{T} end
+
     include("../Utilities/Utils.jl")
     using .Utils
-
-    abstract type AbstractTrainable <: HyperSphere.AbstractObject end
 
     train(f::AbstractTrainable, inputs::AbstractMatrix{T}, outputs::AbstractArray{T2}; Data_Type::Type=Float32) where T where T2 = train!(f, inputs, outputs, Data_Type = Data_Type)
     train!(f::AbstractTrainable, inputs::AbstractMatrix{T}, outputs::AbstractArray{T2}; Data_Type::Type=Float32) where T where T2 = 0
@@ -17,8 +18,10 @@ module Functions
     include("../HyperDimensional/HyperDimensional.jl")
     using .HyperDimensional
 
-    include("AbstractMathmaticalFunction.jl")
-    include("PolynomialRegression.jl")
-    include("MultiVarPolynomial.jl")
-    include("SeriesApprox.jl")
+
+    include("Regression/MultiVarPolynomial.jl")
+    include("Error/Error.jl")
+    include("Optimization/Optimizer.jl")
+    include("NeuralNet/NeuralNet.jl")
+
 end

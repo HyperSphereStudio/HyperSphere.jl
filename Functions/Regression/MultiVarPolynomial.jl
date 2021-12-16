@@ -10,7 +10,7 @@ import Main.HyperSphere.Functions
 
 export MultiVarPolynomial
 
-mutable struct MultiVarPolynomial{T}  <: AbstractMathmaticalFunction{T}
+mutable struct MultiVarPolynomial{T}  <: AbstractTrainable{T}
     start_degree::T
     end_degree::T
     delta_degree::T
