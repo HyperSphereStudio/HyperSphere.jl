@@ -130,9 +130,9 @@ function partition(k::T, n::T, iteration_lambda::Function; max_vector=nothing, s
             if n == 1
                   return iteration_lambda([k], 1)
             end
-            max_vector = max_vector == nothing ? zeros(T, n) : max_vector
-            sum_vector = sum_vector == nothing ? zeros(T, n) : sum_vector
-            index_vector = index_vector == nothing ? zeros(T, n) : index_vector
+            max_vector = max_vector === nothing ? zeros(T, n) : max_vector
+            sum_vector = sum_vector === nothing ? zeros(T, n) : sum_vector
+            index_vector = index_vector === nothing ? zeros(T, n) : index_vector
             current_index_index::T = 1
             total_iteration::T = 1
             max_vector[1] = k
