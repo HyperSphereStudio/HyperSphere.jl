@@ -13,7 +13,7 @@ struct MatrixDataSet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractDa
     end
 
     function check_size(new_size::Integer)
-
+        
         length = new_size
     end
 

@@ -35,6 +35,9 @@ module HyperSphere
         Pkg.add("Reexport")
         Pkg.add("Combinatorics")
         Pkg.add("BenchmarkTools")
+        Pkg.add("PyCall")
+        Pkg.add("PyPlot")
+        Pkg.add("QuadGK")
     end
 end
 

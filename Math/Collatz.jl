@@ -3,10 +3,8 @@ function odd_iter_count(iteration, x, value)
 end
 
 
-
-
-function sum_array(arr, start_i, end_i)
-    sum = 0
+function sum_array(arr, start_i, end_i)::Float64
+    sum::Float64 = 0.0
     for i in start_i:end_i
         sum += arr[i]
     end
@@ -42,7 +40,7 @@ end
 
 function inverse_collatz_conj(n; Type=Float64)
     f = length(n)
-    inner_sum::Type = 0
+    inner_sum::Float64 = 0
     for i in 2:f
         inner_sum += (2 ^ sum_array(n, i, f - 1)) * 3 ^ (i - 2)
     end
@@ -60,10 +58,20 @@ function apply(f, x, m, n=1)
     return x
 end
 
-function innerInverseCollatz(g::Function, len)
-    sum = 0
-    for w in 1:len
-        sum += (2 ^ g(w)) * (3 ^ (w - 2))
+function innerInverseCollatz(n, v)
+    f = length(n)
+    inner_sum::Float64 = 0
+    num = 0
+    for i in 2:f
+        inner_sum += (2 ^ sum_array(n, i, f - 1)) * 3 ^ (i - 2)
     end
-    2 ^ g(0) - sum
+    first = 2 ^ sum_array(n, 1, f - 1)
+    dividend = (3 ^ (f - 1))
+    return (first, inner_sum, dividend, first - inner_sum, (first - inner_sum) / dividend)
+end
+
+for i in 1:2:20
+    out = collatz_conj(i)[1]
+    innerInverseCollatz(out, i)
+    println(out)
 end
