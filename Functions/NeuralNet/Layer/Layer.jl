@@ -2,16 +2,18 @@ export Layer
 
 using .Utils
 
+
+const LayerFunction{T} = Fun{Bool, Tuple{APtr{T}, APtr{T}}}
+
 struct Layer{T}
-    constant_count::T
-    layer_function::Function
+    init_constants::Array{T, 1}
+    layer_function::LayerFunction{T}
 
-    function Layer{T}(constant_count, layer_function::Function) where T
-        new{T}(constant_count, layer_function)
-    end
+    Layer{T}(init_constants::Array{T, 1}, layer_function::Function) where T = new{T}(init_constants, layer_function)
 
-    function (l::Layer{T})(constant_pointer::APtr{T}, args::Input{T}, output_array::Array{T, 1})::Bool where T
-        return l.layer_function(constant_pointer, args, output_array)
+    function (l::Layer{T})(constant_pointer::APtr{T})::T where T
+        
+        return 
     end
 end
 

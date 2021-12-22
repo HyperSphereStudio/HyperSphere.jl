@@ -1,4 +1,4 @@
-export NeuralNetDesigner, NeuralNet
+export NeuralNetDesigner, NeuralNet, push_layer!
 
 mutable struct NeuralNetDesigner{T, InputDim <: Integer, OutputDim <: Integer}
     layers::Vector{Layer}
@@ -8,12 +8,18 @@ mutable struct NeuralNetDesigner{T, InputDim <: Integer, OutputDim <: Integer}
     constant_bounds::Vector{Bound{T}}
 
     function NeuralNetDesigner{T, I, O}(error_function=NeuralNet.meanabserr, optimizer=nothing) where T where I where O
-            new{T, input_length, output_length}(Vector{Layer}(undef, 0), zeros(T, 0), error_function, optimizer)
+            new{T, I, O}(Vector{Layer}(undef, 0), zeros(T, 0), error_function, optimizer)
     end
 
     function (d::NeuralNetDesigner{T})()::TrainableNeuralNet{T, InputDim, OutputDim} where T
             TrainableNeuralNet{T}(d)
     end
+
+    function Base.push_layer!(designer::NeuralNetDesigner{T, I, O}, layer::Layer{T}) where T where I where O
+        push!(designer.layers, layer.layer_function)
+        designer.init_constant_vector
+    end
+
 end
 
 struct NeuralNet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractMathmaticalFunction{T}
@@ -23,22 +29,8 @@ struct NeuralNet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractMathma
     error_function::ErrorFunction{T}
 
     function NeuralNet{T, I, O}(designer::NeuralNetDesigner{T}) where T  where I where O
-            sum = 0
-            for l in designer.layers
-                    sum += l.constant_count
-            end
-
-            constants::ConstantPool{T} = designer.init_constant_vector
-            error_function = designer.error_function
-            error_function = function (newcons)
-                                for i in 1:length(newcons)
-                                        constants[i] = newcons[i]
-                                end
-                                error_function()
-                             end
-
             new{T, I, O}(designer.input_length, designer.output_length, layers,
-                    constants, designer.constant_bounds, error_function)
+                designer.init_constant_vector, designer.constant_bounds, designer.error_function)
     end
 
     function (f::NeuralNet{T, I, O})(args::Input{T}; Data_Type=T) where T where I where O
@@ -51,6 +43,12 @@ struct NeuralNet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractMathma
     end
 end
 
-function train!(f::NeuralNet{T, I, O}; optimizer=blackboxoptimizer) where T where I where O
-        optimizer(f.constants, f.error_function, f.constant_bounds)
+function train!(f::NeuralNet{T, I, O}, data::AbstractDataSet; optimizer::Optimizer{T}=blackboxoptimizer) where T where I where O
+        optimizer(f.constants, 
+                function (newcons)
+                        for i in 1:length(newcons)
+                                constants[i] = newcons[i]
+                        end
+                        error_function(data)
+                end, f.constant_bounds)
 end

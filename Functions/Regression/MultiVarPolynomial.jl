@@ -85,13 +85,13 @@ mutable struct MultiVarPolynomial{T}  <: AbstractTrainable{T}
     end
 end
 
-function Functions.inactivate_training(poly::MultiVarPolynomial{T}) where T
+function Functions.set_trainable!(poly::MultiVarPolynomial{T}) where T
     poly.trainableMode = false
     poly.trainableSVDMatrix = zeros(0, 0)
     poly.trainableOutputVector = zeros(0)
 end
 
-function Functions.train(f::MultiVarPolynomial{T}, inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}) where T where T2 where T3
+function Functions.train!(f::MultiVarPolynomial{T}, inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}) where T where T2 where T3
     if !f.trainableMode; error("Polynomial is not trainable"); end
     training_out = _train(inputs, outputs, f.num_vars, f.num_terms, f.start_degree, f.delta_degree, f.precision, f.trainableSVDMatrix, f.trainableOutputVector)
     f.coefficients = training_out[1]

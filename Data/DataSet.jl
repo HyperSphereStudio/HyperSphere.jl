@@ -9,7 +9,6 @@ abstract type AbstractDataSetEntryIterator{T, InputDim, OutputDim} end
 Base.getindex(set::AbstractDataSet, row, col, is_input::Bool) = ()
 Base.setindex(set::AbstractDataSet, row, col, is_input::Bool, value) = ()
 
-
 rowiter(set::AbstractDataSet; start_range=0, end_range=length(set)) = ()
 coliter(set::AbstractDataSet; start_range=0, end_range=length(set)) = ()
 entryiter(set::AbstractDataSet; start_range=0, end_range=length(set)) = ()
