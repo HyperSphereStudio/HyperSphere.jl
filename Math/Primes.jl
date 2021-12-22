@@ -1,10 +1,9 @@
 export isprime, nextprime, gen_n_primes, brute_next_factor, next_factor
 
-using Main.HyperSphere.HSMath
 
 function isprime(x::Int64)::Bool
         if x % 2 == 0; return false; end
-        for i in 3:2:Int64(ceil(sqrt(x)))
+        for i in 3:2:Int(ceil(sqrt(x)))
                 if x % i == 0; return false; end
         end
         return true
@@ -89,3 +88,4 @@ function next_factor(x::T) where T <: Complex
         if factor == cplx_floor(factor); return factor; end
         return 1
 end
+

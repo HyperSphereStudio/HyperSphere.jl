@@ -1,3 +1,5 @@
+export APtr
+
 struct APtr{T}
     p::Ptr{T}
     len::UInt32

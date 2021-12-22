@@ -1,33 +1,36 @@
-export meanabserr, meansqrerr, meanerr
+export ErrorFunction, meanabserr, meansqrerr, meanerr
 
-using Main.Data
+const ErrorFunction{Iterator, T <: Number} = Fun{T, Tuple{Iterator}}
 
-abstract type ErrorFunction{T <: Type} <: Fun{T, Tuple{TrainableNeuralNet}} end
-
-
-function meanabserr(T::Type)
-    ErrorFunction{T}(
-    function (net)
-        sum = 0
-        for i in 1:length(net)
-            
-        end
-        sum / length(net)
-    end)
+function meanabserr(Iterator::Type; DataType::Type = Float64)
+    ErrorFunction{Iterator, DataType}(
+        function (iter)
+            sum::T = 0
+            for item in iter
+                sum += abs(item)
+            end
+            sum / length(net)
+        end)
 end
 
-function meansqrerr(net::TrainableNeuralNet)
-    sum = 0
-    for i in 1:length(x_values)
-        sum += (func(x_values[i]) - y_values[i]) ^ 2
-    end
-    sqrt(sum) / length(x_values)
+function meansqrerr(Iterator::Type; DataType::Type = Float64)
+    ErrorFunction{Iterator, DataType}(
+        function (iter)
+            sum::T = 0
+            for item in iter
+                sum += item ^ 2
+            end
+            sqrt(sum / length(net))
+        end)
 end
 
-function meanerr(realDataSet::DataSet, func::AbstractMathmaticalFunction)
-    sum = 0
-    for i in 1:length(x_values)
-        sum += func(x_values[i]) - y_values[i]
-    end
-    sum / length(x_values)
+function meanerr(Iterator::Type; DataType::Type = Float64)
+    ErrorFunction{Iterator, DataType}(
+        function (iter)
+            sum::T = 0
+            for item in iter
+                sum += item
+            end
+            sum / length(net)
+        end)
 end

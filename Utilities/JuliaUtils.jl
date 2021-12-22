@@ -1,6 +1,10 @@
 export @nullc, eqerror, getbit, setbit, bytesof,
 matrixbytesof, objectof, matrixobjectof, issupertype, matrixbitsof, bitsof,
-arraybytesof, arrayobjectof, arraybitsof, pass_func
+arraybytesof, arrayobjectof, arraybitsof, pass_func, proto
+
+macro proto(expr)
+      Expr(:(=), Expr(:call, expr), Expr(:block))
+end 
 
 macro nullc(value, if_null)
       return esc(:($value == nothing ? $if_null : $value))

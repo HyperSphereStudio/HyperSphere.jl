@@ -6,7 +6,6 @@ MultiVarPolynomial:
 =#
 
 using LinearAlgebra
-import Main.HyperSphere.Functions
 
 export MultiVarPolynomial
 
@@ -163,3 +162,6 @@ function _train(inputs::AbstractMatrix{T2}, outputs::AbstractVector{T3}, num_var
     inv_svd = pinv(svdmatrix)
     (round.(inv_svd * output_vector, digits = precision), norm(svdmatrix) * norm(inv_svd))
 end
+
+
+

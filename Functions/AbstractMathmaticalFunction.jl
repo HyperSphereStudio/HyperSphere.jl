@@ -22,6 +22,11 @@ function inputs(x::AbstractMathmaticalFunction{T}) where T
     return
 end
 
+
+
+
+
+
 function deriv(f::AbstractMathmaticalFunction{T}, point::T; dimension::Integer=1, Data_Type::Type=T, Delta::T=.001) where T
 
 end

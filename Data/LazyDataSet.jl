@@ -29,6 +29,6 @@ struct LazyDataSetEntryIterator{T, InputDim <: Integer, OutputDim <: Integer} <:
     end
 end
 
-rowiter(set::LazyDataSet; start_range=0, end_range=length(set)) = LazyDataSetRowIterator(set, start_range)
-coliter(set::LazyDataSet; start_range=0, end_range=length(set)) = LazyDataSetColIterator(set, start_range, end_range)
-entryiter(set::LazyDataSet; start_range=0, end_range=length(set)) = LazyDataSetEntryIterator(set, start_range, end_range)
+#rowiter(set::LazyDataSet; start_range=0, end_range=length(set)) = LazyDataSetRowIterator(set, start_range)
+#coliter(set::LazyDataSet; start_range=0, end_range=length(set)) = LazyDataSetColIterator(set, start_range, end_range)
+#entryiter(set::LazyDataSet; start_range=0, end_range=length(set)) = LazyDataSetEntryIterator(set, start_range, end_range)

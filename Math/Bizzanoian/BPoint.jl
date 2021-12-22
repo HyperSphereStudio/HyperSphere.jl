@@ -12,14 +12,14 @@ struct BPoint
     BPoint(n::Number) = new(Float64(n), [0])
 
     "Convert Cartesian to Spherical"
-    function BPoint(coordinates::Array{Float64, 1})
+    function BPoint(coordinates::Vector{Float64})
         ρ::Float64 = 0
         for coord in coordinates
             ρ += coord ^ 2
         end
 
-        partialp = p
-        p = sqrt(p)
+        partialp = ρ
+        ρ = sqrt(ρ)
 
         addPI = coordinates[end] < 0
         deleteat!(coordinates, length(coordinates))
@@ -34,7 +34,7 @@ struct BPoint
             coordinates[end] = 2 * pi - coordinates[end]
         end
 
-        BPoint(p, coordinates)
+        BPoint(ρ, coordinates)
     end
 
 

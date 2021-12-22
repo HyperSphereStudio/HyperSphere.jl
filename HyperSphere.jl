@@ -40,6 +40,3 @@ module HyperSphere
         Pkg.add("QuadGK")
     end
 end
-
-
-clear() = clearconsole()

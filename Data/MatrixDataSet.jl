@@ -8,7 +8,7 @@ struct MatrixDataSet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractDa
         return new{T, I, O}(inputs, outputs, length)
     end
 
-    function MatrixDataSet{I, O}(T::Type) where T where I <: Integer where O <: Integer
+    function MatrixDataSet{I, O}(T::Type) where I <: Integer where O <: Integer
         return new{T, I, O}(zeros(T, InputDim), zeros(T, OutputDim), 0)
     end
 
