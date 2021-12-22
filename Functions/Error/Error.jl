@@ -1,36 +1,36 @@
 export ErrorFunction, meanabserr, meansqrerr, meanerr
 
-const ErrorFunction{Iterator, T <: Number} = Fun{T, Tuple{Iterator}}
+const ErrorFunction{T} = Fun{Number, Tuple{Iterable{T}, Type}}
 
-function meanabserr(Iterator::Type; DataType::Type = Float64)
-    ErrorFunction{Iterator, DataType}(
-        function (iter)
-            sum::T = 0
-            for item in iter
+function meanabserr(DataType::Type)
+    ErrorFunction{DataType}(
+        function (args)
+            sum::Float64 = 0
+            for item in args[1]
                 sum += abs(item)
             end
-            sum / length(net)
+            args[2](sum / length(args[1]))
         end)
 end
 
-function meansqrerr(Iterator::Type; DataType::Type = Float64)
-    ErrorFunction{Iterator, DataType}(
-        function (iter)
-            sum::T = 0
-            for item in iter
+function meansqrerr(DataType::Type)
+    ErrorFunction{DataType}(
+        function (args)
+            sum::Float64 = 0
+            for item in args[1]
                 sum += item ^ 2
             end
-            sqrt(sum / length(net))
+            args[2](sqrt(sum / length(args[1])))
         end)
 end
 
-function meanerr(Iterator::Type; DataType::Type = Float64)
-    ErrorFunction{Iterator, DataType}(
-        function (iter)
-            sum::T = 0
-            for item in iter
+function meanerr(DataType::Type)
+    ErrorFunction{DataType}(
+        function (args)
+            sum::Float64 = 0
+            for item in args[1]
                 sum += item
             end
-            sum / length(net)
+            args[2](sum / length(args[1]))
         end)
 end

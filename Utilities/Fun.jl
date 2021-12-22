@@ -9,7 +9,11 @@ struct Fun{R, A <: Tuple} <: AbstractCallable{R, A}
         new{R, A}(_function)
     end
 
-    function (f::Fun{R, A})(args...)::R  where R where A <: Tuple
+    function (f::Fun{R, A})(args::A)::R  where R where A <: Tuple
         f._function(args)
+    end
+
+    function (f::Fun{R, A})(args...)::R  where R where A <: Tuple
+        f._function(tuple(args...,))
     end
 end

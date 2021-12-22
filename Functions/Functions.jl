@@ -4,9 +4,13 @@ module Functions
     using Main.HyperSphere.Data
     using Main.HyperSphere.HyperDimensional
 
-    export AbstractTrainable, train, train!, ConstantPool, set_trainable
+    export AbstractTrainable, train, train!, set_trainable
+
+    export Input, ConstantPool, Output
 
     const ConstantPool{T} = Array{T, 1}
+    const Input{T, Len} = NTuple{Len, T}
+    const Output{T, Len} = NTuple{Len, T}
 
     include("AbstractMathmaticalFunction.jl")
     abstract type AbstractTrainable{T} <: AbstractMathmaticalFunction{T} end

@@ -1,6 +1,6 @@
-export APtr
+export APtr, increment!, decrement!
 
-struct APtr{T}
+mutable struct APtr{T}
     p::Ptr{T}
     len::UInt32
 
@@ -29,3 +29,8 @@ struct APtr{T}
     Base.:+(p::APtr, val) = APtr(p.p + val, length(p) - val)
     Base.:-(p::APtr, val) = APtr(p.p - val, length(p) + val)
 end
+
+increment!(p::APtr) = incremenet(p, 1)
+decrement!(p::APtr) = decremenet(p, 1)
+increment!(p::APtr, n) = p.p += n
+decrement!(p::APtr, n) = p.p -= n

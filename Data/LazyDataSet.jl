@@ -1,12 +1,12 @@
 struct LazyDataSet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractDataSet{T, InputDim, OutputDim}
     reader::LazyDataSetReader
-    buffer::MatrixDataSet{T, InputDim, OutputDim}
+    buffer::MemoryDataSet{T, InputDim, OutputDim}
 
-    function Base.getindex(set::MatrixDataSet{T, I, O}, row::N, col::N, is_input::Bool) where T where I where O where N <: Integer
+    function Base.getindex(set::MemoryDataSet{T, I, O}, row::N, col::N, is_input::Bool) where T where I where O where N <: Integer
 
     end
 
-    function Base.setindex(set::MatrixDataSet{T, I, O}, row::N, col::N, is_input::Bool, value::T) where T where I where O where N <: Integer
+    function Base.setindex(set::MemoryDataSet{T, I, O}, row::N, col::N, is_input::Bool, value::T) where T where I where O where N <: Integer
 
     end
 end

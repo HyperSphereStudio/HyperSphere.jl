@@ -1,7 +1,7 @@
 export NeuralNetDesigner, NeuralNet, push_layer!
 
 mutable struct NeuralNetDesigner{T, InputDim <: Integer, OutputDim <: Integer}
-    layers::Vector{Layer}
+    layers::Vector{InternalLayer{T}}
     init_constant_vector::Vector{T}
     error_function::ErrorFunction{T}
     optimizer::Optimizer{T}
@@ -15,40 +15,40 @@ mutable struct NeuralNetDesigner{T, InputDim <: Integer, OutputDim <: Integer}
             TrainableNeuralNet{T}(d)
     end
 
-    function Base.push_layer!(designer::NeuralNetDesigner{T, I, O}, layer::Layer{T}) where T where I where O
-        push!(designer.layers, layer.layer_function)
-        designer.init_constant_vector
-    end
+end
 
+function push_layer!(designer::NeuralNetDesigner{T, I, O}, layer::Layer{T}) where T where I where O
+        push!(designer.layers, InternalLayer{T}(layer.layer_function))
+        append!(designer.init_constant_vector, layer.init_constant_vector)
 end
 
 struct NeuralNet{T, InputDim <: Integer, OutputDim <: Integer} <: AbstractMathmaticalFunction{T}
-    layers::Array{Layer, 1}
+    layers::Array{InternalLayer{T}}
     constants::ConstantPool{T}
-    constant_bounds::Array{Bound{T}, 1}
+    constant_bounds::Array{Bound{T}}
     error_function::ErrorFunction{T}
 
-    function NeuralNet{T, I, O}(designer::NeuralNetDesigner{T}) where T  where I where O
-            new{T, I, O}(designer.input_length, designer.output_length, layers,
+    function NeuralNet{T, I, O}(designer::NeuralNetDesigner{T}) where T where I where O
+        new{T, I, O}(designer.input_length, designer.output_length, designer.layers,
                 designer.init_constant_vector, designer.constant_bounds, designer.error_function)
     end
 
-    function (f::NeuralNet{T, I, O})(args::Input{T}; Data_Type=T) where T where I where O
+    function (f::NeuralNet{T, I, O})(args::Input{T, I}; DataType::Type=Float64)::Output{DataType, O} where T where I where O
             const_ptr = APtr(f.constants)
-            output_vec = Data_Type[]
             for l in f.layers
-                    args = l(const_ptr, output_vec, args)
-                    const_ptr += l.constant_count
+                    args = l(const_ptr, args, DataType)
             end
+            args
     end
 end
 
-function train!(f::NeuralNet{T, I, O}, data::AbstractDataSet; optimizer::Optimizer{T}=blackboxoptimizer) where T where I where O
+function train!(f::NeuralNet{T, I, O}, data::AbstractDataSet; optimizer::Optimizer{T}=blackboxoptimizer, DataType::Type=Float64) where T where I where O
         optimizer(f.constants, 
-                function (newcons)
+                function (args)
+                        newcons = args[1]
                         for i in 1:length(newcons)
                                 constants[i] = newcons[i]
                         end
-                        error_function(data)
+                        error_function(data, DataType)
                 end, f.constant_bounds)
 end

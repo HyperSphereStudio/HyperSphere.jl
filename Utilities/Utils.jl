@@ -12,4 +12,5 @@ module Utils
     include("Fun.jl")
     include("APtr.jl")
     include("JuliaUtils.jl")
+    include("Iterable.jl")
 end

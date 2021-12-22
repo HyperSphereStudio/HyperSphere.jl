@@ -1,7 +1,7 @@
 module Data
 
     include("DataSet.jl")
-    include("MatrixDataSet.jl")
+    include("MemoryDataSet.jl")
    # include("DataSetReader.jl")
    # include("LazyDataSet.jl")
    # include("DataSetWriter.jl")
