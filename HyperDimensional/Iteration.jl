@@ -1,8 +1,15 @@
 using Combinatorics
 using BenchmarkTools
-using Main.HyperSphere.HSMath
 
-export hditer, uhditer, flatten_uhditer, flatten_hditer, total_count, sum_comb, unflatten_uhditer, unflatten_hditer, partition, partition_test, partition
+using ..Utils
+using ..HSMath
+import ..Fun
+
+export hditer, uhditer, flatten_uhditer, flatten_hditer, total_count, 
+      sum_comb, unflatten_uhditer, unflatten_hditer, partition, partition_test, partition, HIterator
+
+"iteration_lambda(index_vector::AbstractArray{T}, total_iteration::Integer)::Bool. Return true when it should stop"
+const HIterator{T} = Fun{Bool, Tuple{AbstractArray{T}, Int}}
 
 """ High Dimensional Iteration
       Performs an iteration over length(param_1) dimensions, with the value at param_1 being number of times in that dimension
@@ -10,11 +17,8 @@ export hditer, uhditer, flatten_uhditer, flatten_hditer, total_count, sum_comb, 
             For Example [1, 1, 1] -> [1, 1, 2] if forward direction
       Forward direction means incrementing positively
             For Example [1, 1, 2] -> [1, 1, 1] if left direction
-
-      iteration_lambda(index_vector::AbstractArray{T}, total_iteration::Integer)::Bool
-      Return true when it should stop
 """
-function hditer(length_vector::AbstractArray{T}, iteration_lambda::Function; start_vec=nothing, leftward=true, forward=true) where T
+function hditer(length_vector::AbstractArray{T}, iteration_lambda::HIterator{T}; start_vec=nothing, leftward=true, forward=true) where T
       start_vector::Vector{T} = forward ? (@nullc(start_vec, ones(T, length(length_vector)))) : (@nullc(start_vec, copy(length_vector)))
       index_vector::Vector{T} = copy(start_vector)
       current_index::Int64 = leftward ? 1 : length(length_vector)
@@ -29,9 +33,7 @@ function hditer(length_vector::AbstractArray{T}, iteration_lambda::Function; sta
                   current_index -= rldirection
                   @goto reset
             else
-                  if iteration_lambda(index_vector, total_iteration)
-                        return
-                  end
+                  iteration_lambda(index_vector, total_iteration) && return true
                   index_vector[current_index] += fbdirction
                   total_iteration += fbdirction
             end
@@ -42,14 +44,15 @@ function hditer(length_vector::AbstractArray{T}, iteration_lambda::Function; sta
             index_vector[current_index] += fbdirction
             @goto reset
       end
+
+      return false
 end
 
 """ Uniform High Dimensional Iteration
     Performs an iteration over param_1 dimensions, param_2 times
-    iteration_lambda(index_vector::AbstractArray{T}, total_iteration::Integer)::Bool
-       Return true when it should end
+    Return true when it should end
 """
-uhditer(num_dimensions::Integer, num_times::Integer, iteration_lambda::Function; start_vec=nothing, left_dir=true, forward_dir=true) = hditer(fill(num_times, num_dimensions), iteration_lambda, start_vec = start_vec, leftward = left_dir, forward = forward_dir)
+uhditer(num_dimensions, num_times, iteration_lambda::HIterator{T}; start_vec=nothing, left_dir=true, forward_dir=true) where T = hditer(fill(num_times, num_dimensions), iteration_lambda, start_vec = start_vec, leftward = left_dir, forward = forward_dir)
 
 
 """ Inverse function of hyper index flattener
@@ -74,7 +77,6 @@ function unflatten_hditer(dim_count, flattenedID::T; prime_list=HSMath.gen_n_pri
       new_id = 0
       index = 0
       while index < dim_count && (new_id = id / prime_list[end - index]) > 0
-            println("", id)
             indexes[index + 1] = id % prime_list[end - index] + 1
             id = floor(new_id)
             index += 1
@@ -102,16 +104,14 @@ total_count(base, count) = (base ^ count)
 
 """   Function that iterates a n length vector such that the combination sum is always equal to k and all elements are the natural numbers
     . Invokes lambda function on every iteration
-      iteration_lambda (index_vector::Vector{T}, total_iteration::T)::Bool
-            Return true when it should end
-            Returns if it was stopped or not
+      Returns if it was stopped or not
 """
-function partition(n::T, iteration_lambda::Function)::Bool where T
+function partition(n, iteration_lambda::HIterator{T})::Bool where T
       max_vector = zeros(T, n)
       sum_vector = zeros(T, n)
       index_vector = zeros(T, n)
       for i in 1:n
-            partition(n, i, iteration_lambda, max_vector=max_vector, sum_vector=sum_vector, index_vector=index_vector)
+            partition(n, i, iteration_lambda, max_vector=max_vector, sum_vector=sum_vector, index_vector=index_vector) && return true
             fill(0, max_vector)
             fill(0, sum_vector)
             fill(0, index_vector)
@@ -121,15 +121,11 @@ end
 
 """   Function that iterates a n length vector such that the combination sum is always equal to k and all elements are the natural numbers
     . Invokes lambda function on every iteration
-      iteration_lambda (index_vector::Vector{T}, total_iteration::T)::Bool
-            Return true when it should end
       Returns if it was stopped or not
 """
-function partition(k::T, n::T, iteration_lambda::Function; max_vector=nothing, sum_vector=nothing, index_vector=nothing)::Bool where T
+function partition(k, n, iteration_lambda::HIterator{T}; max_vector=nothing, sum_vector=nothing, index_vector=nothing)::Bool where T
       if n > 0
-            if n == 1
-                  return iteration_lambda([k], 1)
-            end
+            n == 1 && return iteration_lambda([k], 1)
             max_vector = max_vector === nothing ? zeros(T, n) : max_vector
             sum_vector = sum_vector === nothing ? zeros(T, n) : sum_vector
             index_vector = index_vector === nothing ? zeros(T, n) : index_vector
@@ -146,9 +142,7 @@ function partition(k::T, n::T, iteration_lambda::Function; max_vector=nothing, s
                         index_vector[current_index_index] = max(0, -(k * (n - current_index_index - 1) + sum_vector[current_index_index]))
                         max_vector[current_index_index] = k - sum_vector[current_index_index]
                   else
-                        if iteration_lambda(index_vector, total_iteration)
-                              return true
-                        end
+                        iteration_lambda(index_vector, total_iteration) && return true
                         total_iteration += 1
                         index_vector[end] += 1
                   end

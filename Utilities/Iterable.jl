@@ -15,9 +15,7 @@ struct Iterable{ElType}
     Base.iterate(i::Iterable) = Base.iterate(i.backend)
     Base.iterate(i::Iterable, state) = Base.iterate(i.backend, state)
     Base.size(i::Iterable, dim) = Base.size(i.backend, dim)
-
-    Base.convert(::Iterable{T}, x::Vector{T}) where T = Iterable(x)
-    Base.convert(::Iterable{T}, x::Array{T}) where T = Iterable(x)
+    Base.convert(::Iterable, x) = Iterable(x)
 end
 
 

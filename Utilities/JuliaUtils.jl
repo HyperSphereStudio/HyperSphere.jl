@@ -1,6 +1,19 @@
 export @nullc, eqerror, getbit, setbit, bytesof,
 matrixbytesof, objectof, matrixobjectof, issupertype, matrixbitsof, bitsof,
-arraybytesof, arrayobjectof, arraybitsof, pass_func, proto
+arraybytesof, arrayobjectof, arraybitsof, pass_func, proto, findOrIsMethod
+
+function findOrIsMethod(CheckMod::Module, MethodOrName)
+      MethodOrName isa Method && return MethodOrName  
+      return isdefined(CheckMod, MethodOrName) ? getproperty(CheckMod, MethodOrName) : nothing
+end
+
+function findOrIsMethod(CheckMods::Tuple{Module}, MethodOrName)
+      MethodOrName isa Method && return MethodOrName
+      for mod in CheckMods
+            isdefined(mod, MethodOrName) && return getproperty(mod, MethodOrName)
+      end      
+      return nothing
+end
 
 macro proto(expr)
       Expr(:(=), Expr(:call, expr), Expr(:block))

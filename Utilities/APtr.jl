@@ -1,33 +1,19 @@
 export APtr, increment!, decrement!
 
 mutable struct APtr{T}
-    p::Ptr{T}
+    arr::AbstractArray{T}
+    ptr::Int
     len::UInt32
 
-    function APtr(p::Ptr{T}, len) where T
-        new{T}(p, len)
-    end
+    APtr(a::AbstractArray{T}) where T = new{T}(a, 0, length(a))
 
-    function APtr(v::Vector{T}) where T
-         new{T}(pointer(v), length(v))
-    end
-
-    function APtr(a::Array{T, 1}) where T
-        new{T}(pointer(a), length(a))
-    end
-
-    Base.length(p::APtr) = len
-
-    function Base.getindex(p::APtr, index::UInt32)
-        return p.p[index]
-    end
-
-    function Base.setindex(p::APtr, v, index::UInt32)
-        p.p[index] = v
-    end
-
-    Base.:+(p::APtr, val) = APtr(p.p + val, length(p) - val)
-    Base.:-(p::APtr, val) = APtr(p.p - val, length(p) + val)
+    Base.length(p::APtr) = p.len
+    Base.getindex(p::APtr) = p.arr[p.ptr + 1]
+    Base.setindex!(p::APtr, v) = p.arr[p.ptr + 1] = v
+    Base.getindex(p::APtr, index::Int) = p.arr[index + p.ptr]
+    Base.setindex!(p::APtr, v, index::Int) = p.arr[index + p.ptr] = v
+    Base.:+(p::APtr, val) = p.ptr += val
+    Base.:-(p::APtr, val) = p.ptr -= val
 end
 
 increment!(p::APtr) = incremenet(p, 1)

@@ -1,4 +1,5 @@
 module HyperDimensional
+    
     struct DimensionException <: Exception
         args
         msg
@@ -7,9 +8,6 @@ module HyperDimensional
     end
 
     export DimensionException
-
-    include("../Utilities/Utils.jl")
-    using .Utils
 
     include("Iteration.jl")
     include("Math.jl")

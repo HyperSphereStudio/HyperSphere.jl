@@ -54,26 +54,22 @@ struct BPoint
 
     function Base.:+(p1::BPoint, p2::BPoint)::BPoint
         angles = norm_angles(p1, p2)
-        unit_vector = unit(angles)
-        return BPoint(project(p1, unit_vector).ρ + project(p2, unit_vector).ρ, angles)
+        return BPoint(p1.ρ + p2.ρ, angles)
     end
 
     function Base.:*(p1::BPoint, p2::BPoint)::BPoint
         angles = norm_angles(p1, p2)
-        unit_vector = unit(angles)
-        return BPoint(project(p1, unit_vector).ρ * project(p2, unit_vector).ρ, angles)
+        return BPoint(p1.ρ * p2.ρ, angles)
     end
 
     function Base.:/(p1::BPoint, p2::BPoint)::BPoint
         angles = norm_angles(p1, p2)
-        unit_vector = unit(angles)
-        return BPoint(project(p1, unit_vector).ρ / project(p2, unit_vector).ρ, angles)
+        return BPoint(p1.ρ / p2.ρ, angles)
     end
 
     function Base.:-(p1::BPoint, p2::BPoint)::BPoint
         angles = norm_angles(p1, p2)
-        unit_vector = unit(angles)
-        return BPoint(project(p1, unit_vector).ρ - project(p2, unit_vector).ρ, angles)
+        return BPoint(p1.ρ - p2.ρ, angles)
     end
 
 

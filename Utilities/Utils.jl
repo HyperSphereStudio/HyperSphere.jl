@@ -2,12 +2,19 @@ module Utils
 
     export Bound, Entry
 
-    const Bound{T <: Number} = Tuple{T, T}
-    lower_bound(x::Bound{T}) where T <: Number = x[1]
-    upper_bound(x::Bound{T}) where T <: Number = x[2]
+    struct Bound{T <: Number}
+        lower_bound::T
+        upper_bound::T
+        Bound{T}(lower_bound, upper_bound) where T = new{T}(T(lower_bound), T(upper_bound))
+    end
 
-    const Entry{K, V} = Tuple{K, V}
-
+    struct Entry{K, V}
+        key::K
+        value::V
+        Entry{K, V}(key, value) where {K, V} = new{K, V}(K(key), V(value))
+        Entry(key::K, value::V) where {K, V} = new{K, V}(K(key), V(value))
+    end
+    
 
     include("Fun.jl")
     include("APtr.jl")

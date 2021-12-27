@@ -1,3 +1,20 @@
+function hypersphere_install_pkgs(download_optional=false)
+    Pkg.add("BlackBoxOptim")
+    Pkg.add("StaticArrays")
+    Pkg.add("Lazy")
+    Pkg.add("Reexport")
+    Pkg.add("Combinatorics")
+    Pkg.add("BenchmarkTools")
+
+
+    #Optional
+    if download_optional
+        Pkg.add("PyCall")
+        Pkg.add("PyPlot")
+        Pkg.add("QuadGK")
+    end
+end
+
 module HyperSphere
     import Pkg
     using Reexport
@@ -27,16 +44,4 @@ module HyperSphere
 
     include("Vector/Vector.jl")
     @reexport using .MVector
-
-    function install()
-        Pkg.add("BlackBoxOptim")
-        Pkg.add("StaticArrays")
-        Pkg.add("Lazy")
-        Pkg.add("Reexport")
-        Pkg.add("Combinatorics")
-        Pkg.add("BenchmarkTools")
-        Pkg.add("PyCall")
-        Pkg.add("PyPlot")
-        Pkg.add("QuadGK")
-    end
 end

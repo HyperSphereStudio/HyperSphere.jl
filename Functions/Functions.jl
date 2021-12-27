@@ -1,10 +1,10 @@
 module Functions
-    import Main.HyperSphere
-    using Main.HyperSphere.Utils
-    using Main.HyperSphere.Data
-    using Main.HyperSphere.HyperDimensional
+    using Reexport
+    using ..Utils
+    using ..Data
+    using ..HyperDimensional
 
-    export AbstractTrainable, train, train!, set_trainable
+    export AbstractTrainable, train, train!, AbstractTrainer
 
     export Input, ConstantPool, Output
 
@@ -12,17 +12,27 @@ module Functions
     const Input{T, Len} = NTuple{Len, T}
     const Output{T, Len} = NTuple{Len, T}
 
-    include("AbstractMathmaticalFunction.jl")
-    abstract type AbstractTrainable{T} <: AbstractMathmaticalFunction{T} end
+    include("AbstractMathFun.jl")
+    include("CommonStaticFunctions.jl")
+    
+    abstract type AbstractTrainable{T, N} <: AbstractMathFun{T, N} end
+    abstract type AbstractTrainer{T, N} <: AbstractMathFun{T, N} end
 
-    include("Error/Error.jl")
-    include("Optimization/Optimizer.jl")
+    include("Error.jl")
+    include("Optimizer.jl")
 
-    train!(f::AbstractTrainable, data::AbstractDataSet, outputs::AbstractArray{T2}; Data_Type::Type=Float32) where T where T2 = ()
-    train!(f::AbstractTrainable, data::AbstractDataSet; optimizer::Optimizer{T}=blackboxoptimizer) where T where I where O = ()
-    set_trainable!(f::AbstractTrainable) = ()
+    trainer(f::AbstractMathFun; precision=10) = ()
+    train!(f::AbstractTrainer, data::AbstractDataSet; Data_Type::Type=Float64) = ()
+    train!(f::AbstractTrainer, data::AbstractDataSet, optimizer::Optimizer.Func; Data_Type::Type=Float64) = ()
 
-    include("Regression/MultiVarPolynomial.jl")
-    include("NeuralNet/NeuralNetModule.jl")
+    include("Impl/BuiltInFunctions.jl")
+    @reexport using .BuiltInFunctions
+
+    include("Regression/Regression.jl")
+    @reexport using .Regression
+
+    include("NeuralNet/NeuralNet.jl")
+    @reexport using .NeuralNet
+    
 
 end
