@@ -15,7 +15,7 @@ function collect_data()
     
     for i in 1:10
         inputs[i] = i
-        outputs[i] = i * 2
+        outputs[i] = i * 5
     end
 
     Data.ReadArrayToDataSet(inputs, outputs)
@@ -32,9 +32,9 @@ function test()
     neuralnet = designer()
     nettrainer = trainer(neuralnet, optimizer = Optimizer.blackboxoptimizer(method = :de_rand_1_bin))
     
-    println("Pre Train:" * join(["$i=$(neuralnet([i]))" for i in 1.0:10.0], ", "))
+    println(join(["$i=$(round(neuralnet([i]), digits=3))" for i in 1.0:10.0], ","))
     train!(nettrainer, collect_data())
-    println("Post Train:" * join(["$i=$(neuralnet([i]))" for i in 1.0:10.0], ", "))
+    println(join(["$i=$(round(neuralnet([i]), digits=3))" for i in 1.0:10.0], ","))
 end
 
 
