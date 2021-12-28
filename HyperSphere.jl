@@ -5,6 +5,7 @@ function hypersphere_install_pkgs(download_optional=false)
     Pkg.add("Reexport")
     Pkg.add("Combinatorics")
     Pkg.add("BenchmarkTools")
+    Pkg.add("Optim.jl")
 
 
     #Optional
@@ -40,9 +41,10 @@ module HyperSphere
     include("Data/Data.jl")
     @reexport using .Data
 
+    include("Vector/Vector.jl")
+    @reexport using .MVector
+
     include("Functions/Functions.jl")
     @reexport using .Functions
 
-    include("Vector/Vector.jl")
-    @reexport using .MVector
 end

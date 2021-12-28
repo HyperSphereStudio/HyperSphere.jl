@@ -1,4 +1,6 @@
-export vnorm, vmathlen, gradient, gradient_descent
+export vnorm, vmathlen, gradient!
+
+import ..Fun
 
 function vnorm(values::AbstractArray{T}; norm_type=2) where T
     if length(values) == 1; return [1]; end
@@ -17,9 +19,9 @@ function vmathlen(values::AbstractArray{T}; norm_type=2) where T
     sum ^ (1 / norm_type)
 end
 
-function gradient(f::Function, values::AbstractArray{T}, gradient_vector::AbstractArray{T}; delta=.0001) where T
+function gradient!(f::Fun, values::Array{T}, gradient_vector::Array{T}; delta=.0001) where T
+    first = f(values)
     for i in 1:length(values)
-        first = f(values)
         values[i] += delta
         gradient_vector[i] = (f(values) - first) / delta
         values[i] -= delta

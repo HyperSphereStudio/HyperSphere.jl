@@ -9,32 +9,35 @@ import .HyperSphere.Functions.NeuralNet.Activation
 import .HyperSphere.Functions.NeuralNet.Initializer
 import .HyperSphere.Functions.Error
 
+f(x) = 5 * x
+
 function collect_data()
-    inputs = zeros(Double, 10)
-    outputs = zeros(Double, 10)
+    data_size = 100
+    inputs = zeros(Double, data_size)
+    outputs = zeros(Double, data_size)
     
-    for i in 1:10
+    for i in 1:data_size
         inputs[i] = i
-        outputs[i] = i * 5
+        outputs[i] = f(i)
     end
 
     Data.ReadArrayToDataSet(inputs, outputs)
 end
 
 function test()
-    designer = NeuralNet.ModelDesigner(1, 1, error = Error.Meansqrerr())
+    designer = NeuralNet.ModelDesigner(1, 1, error = Error.Meanabserr())
 
     rng_init = Initializer.RNG(-10.0:10.0)
 
-    push!(designer, Layers.UniformNodeSetLayer(1, 5, Nodes.LinearNode(activation = Activation.Tanh()), rng_init))
-    push!(designer, Layers.UniformNodeSetLayer(5, 1, Nodes.LinearNode(functional = Functional.∑()), rng_init))
+    push!(designer, Layers.UniformNodeSetLayer(1, 5, Nodes.LinearNode(), rng_init))
+    push!(designer, Layers.UniformNodeSetLayer(3, 1, Nodes.LinearNode(functional = Functional.∑()), rng_init))
 
     neuralnet = designer()
-    nettrainer = trainer(neuralnet, optimizer = Optimizer.blackboxoptimizer(method = :de_rand_1_bin))
+    nettrainer = trainer(neuralnet, optimizer = Optimizer.blackboxoptimizer())
     
-    println(join(["$i=$(round(neuralnet([i]), digits=3))" for i in 1.0:10.0], ","))
+    println(join(["$i=$(round(neuralnet([i])[1], digits=3))" for i in 1.0:10.0], ","))
     train!(nettrainer, collect_data())
-    println(join(["$i=$(round(neuralnet([i]), digits=3))" for i in 1.0:10.0], ","))
+    println(join(["$i=$(round(neuralnet([i])[1], digits=3))" for i in 1.0:10.0], ","))
 end
 
 

@@ -91,12 +91,6 @@ struct ModelTrainer{StorageType, InputType, OutputType, InputSize, OutputSize} <
 end
 
 function Functions.train!(f::ModelTrainer{ST, IT, OT, I, O}, data::AbstractDataSet) where {ST, IT, OT, I, O}
-    copy!(f.net.constants, f.optimizer(f.net.constants, 
-        Error.Func{OT}(
-            function (constants)
-            copy!(f.net.constants, constants)
-            f.net.error_function(data, f.net)
-            end), 
-        f.net.constant_bounds))
+    f.optimizer(f.net.constants, Error.Func{OT}(() -> f.net.error_function(data, f.net)), f.net.constant_bounds)
 end
 
