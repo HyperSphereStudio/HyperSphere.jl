@@ -20,9 +20,10 @@ module HyperSphere
     using Reexport
     using Lazy
 
+    const Double = Float64
     abstract type AbstractObject end
-
-    export AbstractObject
+    
+    export AbstractObject, Double
 
     Base.show(buffer::IO, x::AbstractObject) = print(buffer, string(x))
     Base.show(io::IO, x::BitVector) = for i in 1:length(x); print(io, x[i] ? "1" : "0"); end

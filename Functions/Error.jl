@@ -1,42 +1,45 @@
 module Error
     using ..Functions
     using ..Utils
+    using ..Data
 
-    @Fun(Func{T}, Number, Iterable{T}, DataType::Type)
+    @Fun(Func{OutputType}, OutputType, AbstractDataSet, fun::Any)
+    @Fun(Wrapper, Func, InputType::Type, OutputType::Type)
 
-    export meanabserr, meansqrerr, meanerr
+    export Meanabserr, Meansqrerr, Meanerr, None
 
-    function meanabserr(DataType::Type)
-        Func{DataType}(
-            function (iter, T)
-                sum::Float64 = 0
-                for item in iter
-                    sum += abs(item)
+    diff(fun, entry) = fun(entry.inputs)[1] - entry.outputs[1]
+
+    None() = Wrapper((IT, OT) -> Func{OT}((dataset, fun) -> OT(0)))
+
+    function Meanabserr()
+        Wrapper((IT, OT) -> Func{OT}(function (dataset, fun)
+                sum::IT = 0
+                for item in dataset
+                    sum += abs(diff(fun, item))
                 end
-                T(sum / length(iter))
-            end)
+                OT(sum / length(dataset))
+            end))
     end
 
-    function meansqrerr(DataType::Type)
-        Func{DataType}(
-            function (iter, T)
-                sum::Float64 = 0
-                for item in iter
-                    sum += item ^ 2
+    function Meansqrerr()
+        Wrapper((IT, OT) -> Func{OT}(function (dataset, fun)
+                sum::IT = 0
+                for item in dataset
+                    sum += diff(fun, item) ^ 2
                 end
-                T(sqrt(sum / length(iter)))
-            end)
+                OT(sqrt(sum / length(dataset)))
+            end))
     end
 
-    function meanerr(DataType::Type)
-        Func{DataType}(
-            function (iter, T)
-                sum::Float64 = 0
-                for item in iter
-                    sum += item
+    function Meanerr()
+        Wrapper((IT, OT) -> Func{OT}(function (dataset, fun)
+                sum::IT = 0
+                for item in dataset
+                    sum += diff(fun, item)
                 end
-                T(sum / length(iter))
-            end)
+                OT(sum / length(dataset))
+            end))
     end
 end
 

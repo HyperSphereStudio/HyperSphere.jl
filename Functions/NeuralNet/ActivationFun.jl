@@ -4,15 +4,17 @@ module Activation
 
     export Sigmoid, Tanh, ZeroMax, ZeroMin, RELU, LeakyRELU
 
-    @Fun(Func{T}, T, T)
+    @Fun(Func{InputType, OutputType}, out::OutputType, in::InputType)
+    @Fun(Wrapper, Func, InputType::Type, OutputType::Type)
 
-    Sigmoid(T::Type) = Func{T}(Single.Sigmoid(T))
-    Tanh(T::Type) = Func{T}(Single.Tanh(T))
-    ZeroMax(T::Type) = Func{T}(Single.RMax(T, 0))
-    ZeroMin(T::Type) = Func{T}(Single.RMin(T, 0))
-    LeakyRELU(T::Type, slope) = Func{T}(Single.LeftValuePieceWise([Linear(T, slope, 0), Linear(T, 1, 0)], [0]))
+    Sigmoid() = Wrapper((IT, OT) -> Func{IT, OT}(Single.Sigmoid(IT, OT)))
+    Tanh() = Wrapper((IT, OT) -> Func{IT, OT}(Single.Tanh(IT, OT)))
+    ZeroMax() = Wrapper((IT, OT) -> Func{IT, OT}(Single.RMax(IT, OT, 0)))
+    ZeroMin() = Wrapper((IT, OT) -> Func{IT, OT}(Single.RMin(IT, OT, 0)))
+    LeakyRELU(slope) = Wrapper((IT, OT) -> Func{IT, OT}(Single.LeftValuePieceWise(IT, OT, [Linear(slope, 0), Linear(1, 0)], [0])))
+    None() = Wrapper((IT, OT) -> Func{IT, OT}(x -> OT(x)))
 
     #Aliases
-    RELU(T::Type) = ZeroMax(T)
+    RELU() = ZeroMax()
 end
 

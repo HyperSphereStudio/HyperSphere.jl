@@ -1,9 +1,19 @@
 export @nullc, eqerror, getbit, setbit, bytesof,
 matrixbytesof, objectof, matrixobjectof, issupertype, matrixbitsof, bitsof,
-arraybytesof, arrayobjectof, arraybitsof, pass_func, proto, findOrIsMethod
+arraybytesof, arrayobjectof, arraybitsof, pass_func, proto, findOrIsMethod, FakeMethod
+
+
+
+struct FakeMethod{T}
+      obj::T
+      FakeMethod(obj::T) where T = new{T}(obj)
+      (x::FakeMethod)(args...) = x.obj
+end
+
+
 
 function findOrIsMethod(CheckMod::Module, MethodOrName)
-      MethodOrName isa Method && return MethodOrName  
+      MethodOrName isa Method && return FakeMethod(MethodOrName)  
       return isdefined(CheckMod, MethodOrName) ? getproperty(CheckMod, MethodOrName) : nothing
 end
 

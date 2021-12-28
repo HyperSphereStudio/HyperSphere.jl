@@ -1,40 +1,46 @@
 module Layers
     using ..Utils
     import ..Initializer
+    import ...AbstractObject
 
-    @VFun(Func{T}, constant_pointer::APtr{T}, inputs::Array{T, 1}, outputs::Array{T, 1})
+    @VFun(Func{StorageType, InputType}, constant_pointer::APtr{StorageType}, inputs::Array{InputType, 1}, outputs::Array{StorageType, 1})
+    @Fun(Wrapper, layer::AbstractObject, StorageType::Type, InputType::Type, OutputType::Type)
 
     export Layer, InternalLayer
 
-    mutable struct Layer{T, N, O}
-        init_constants::Array{T, 1}
-        constant_bounds::Array{Bound{T}, 1}
-        layer_function::Func{T}
+    mutable struct Layer{ST, IT, OT, N, O} <: AbstractObject
+        init_constants::Array{ST, 1}
+        constant_bounds::Array{Bound{ST}, 1}
+        layer_function::Func{ST, IT}
 
-        function Layer{T, N, O}(const_size::Int, const_initializer::Initializer.Func{T}, layer_function::Func{T}) where {T, N, O}
-            init_constants = Array{T}(undef, const_size)
-            constant_bounds = Array{Bound{T}}(undef, const_size)
+        function Layer{ST, IT, OT, N, O}(const_size::Int, const_initializer::Initializer.Wrapper, layer_function::Func{ST, IT}) where {ST, IT, OT, N, O}
+            init_constants = Array{ST}(undef, const_size)
+            constant_bounds = Array{Bound{ST}}(undef, const_size)
+            initializer = const_initializer(ST)
             for i in 1:length(init_constants)
-                res = const_initializer(i)
+                res = initializer(i)
                 init_constants[i] =  res[1]
                 constant_bounds[i] = res[2]
             end
-            new{T, N, O}(init_constants, constant_bounds, layer_function)
+            new{ST, IT, OT, N, O}(init_constants, constant_bounds, layer_function)
         end
+
+        Base.string(x::Layer{ST, IT, OT, N, O}) where {ST, IT, OT, N, O} = "Layer{$ST, $IT, $OT, $N, $O}(Const_Count=$(size(x.init_constants)), Layer_Fun=$(x.layer_function))"
     end
 
-    struct InternalLayer{T, N ,O}
+    struct InternalLayer{ST, IT, OT, N ,O} <: AbstractObject
         const_length::Int
-        layer_function::Func{T}
-        outputs::Array{T, 1}
+        layer_function::Func{ST, OT}
+        outputs::Array{OT, 1}
 
-        InternalLayer{T}(l::Layer{T, N, O}) where {T, N, O} = new{T, N, O}(length(l.init_constants), l.layer_function, zeros(T, N))
+        InternalLayer(l::Layer{ST, IT, OT, N, O}) where {ST, IT, OT, N, O} = new{ST, IT, OT, N, O}(length(l.init_constants), l.layer_function, zeros(OT, O))
 
-        function (l::InternalLayer{T, N, O})(constant_pointer::APtr{T}, inputs::Array{T, 1}) where {T, N, O}
+        function (l::InternalLayer{ST, IT, OT, N, O})(constant_pointer::APtr{ST}, inputs::Array{IT, 1}) where {ST, IT, OT, N, O}
             l.layer_function(constant_pointer, inputs, l.outputs)
-            increment!(constant_pointer, l.const_length)
             return l.outputs
         end
+
+        Base.string(x::InternalLayer{ST, IT, OT, N, O}) where {ST, IT, OT, N, O} = "Layer{$ST, $IT, $OT, $N, $O}(Const_Count=$(x.const_length), Layer_Fun=$(x.layer_function))"
     end
 
     include("Functional.jl")

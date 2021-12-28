@@ -22,8 +22,8 @@ module Functions
     include("Optimizer.jl")
 
     trainer(f::AbstractMathFun; precision=10) = ()
-    train!(f::AbstractTrainer, data::AbstractDataSet; Data_Type::Type=Float64) = ()
-    train!(f::AbstractTrainer, data::AbstractDataSet, optimizer::Optimizer.Func; Data_Type::Type=Float64) = ()
+    trainer(f::AbstractMathFun, optimizer::Optimizer.Wrapper) = ()
+    train!(f::AbstractTrainer, data::AbstractDataSet) = ()
 
     include("Impl/BuiltInFunctions.jl")
     @reexport using .BuiltInFunctions

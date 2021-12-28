@@ -16,7 +16,7 @@ mutable struct APtr{T}
     Base.:-(p::APtr, val) = p.ptr -= val
 end
 
-increment!(p::APtr) = incremenet(p, 1)
-decrement!(p::APtr) = decremenet(p, 1)
-increment!(p::APtr, n) = p.p += n
-decrement!(p::APtr, n) = p.p -= n
+increment!(p::APtr) = incremenet!(p, 1)
+decrement!(p::APtr) = decremenet!(p, 1)
+increment!(p::APtr, n) = p.ptr += n
+decrement!(p::APtr, n) = p.ptr -= n

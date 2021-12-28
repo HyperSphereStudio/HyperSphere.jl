@@ -1,30 +1,33 @@
 module Functional
     using ..Utils
 
-    @Fun(Func{T}, T, inputs::Array{T, 1})
-    @DocFun(Func{T}, "Function that goes from Rn -> R1")
+    @Fun(Func{InputType}, InputType, inputs::Array{InputType, 1})
+    @Fun(Wrapper, Func, InputType::Type)
 
+    export ∑, None, ∏
 
-    function summation(T::Type)
-        Func{T}(
+    None() = Wrapper((IT) -> Func{IT}(inputs -> IT(inputs[1])))
+
+    function ∑()
+        Wrapper((IT) -> Func{IT}(
             function (inputs)
-                sum::Float64 = 0
+                sum::IT = 0
                 for arg in inputs
                     sum += arg
                 end
-                T(sum)
-            end)
+                IT(sum)
+            end))
     end
 
-    function product(T::Type)
-        Func{T}(
+    function ∏()
+        Wrapper((IT) -> Func{IT}(
             function (inputs)
-                product::Float64 = 0
+                product::IT = 0
                 for arg in inputs
                     product *= arg
                 end
-                T(product)
-            end)
+                IT(product)
+            end))
     end
 end
 

@@ -1,11 +1,20 @@
 export NodeSetLayer
 
-function NodeSetLayer(T::Type, input_size::Int, nodes::AbstractArray{Nodes.Node}, const_initializer)::Layer{T, input_size, length(nodes)}
-    Layer{T, input_size, output_size}(node.constant_size * size, const_initializer, 
-        Func{T}(
-            function (constant_pointer, inputs, outputs)
-                for node in nodes
-                    outputs[i] = node(constant_pointer, inputs)
-                end
-            end))
+function NodeSetLayer(input_size::Int, nodeWrappers::AbstractArray{Nodes.Node}, const_initializer)
+    return Wrapper(
+                function(ST, IT, OT)
+                    nodes = [wrapper(ST, IT, OT) for wrapper in nodeWrappers]
+                    constant_sum = 0
+                    for node in nodes
+                        constant_sum += node.constant_size
+                    end
+                    Layer{ST, IT, OT, input_size, length(nodes)}(constant_sum, const_initializer, 
+                        Func{ST, IT}(
+                            function (constant_pointer, inputs, outputs)
+                                for i in 1:length(nodes)
+                                    outputs[i] = nodes[i](constant_pointer, inputs)
+                                    increment!(constant_pointer, nodes[i].constant_size)
+                                end
+                            end))
+                end)
 end

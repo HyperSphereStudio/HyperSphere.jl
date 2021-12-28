@@ -1,11 +1,13 @@
 module Initializer
     using ..Utils
 
-    @Fun(Func{T}, cons_and_bounds::Tuple{T, Bound{T}}, idx::Int)
+    @Fun(Func{StorageType}, cons_and_bounds::Tuple{StorageType, Bound{StorageType}}, idx::Int)
+    @Fun(Wrapper, Func, StorageType::Type)
 
-    export RNGInitializer
+    export RNG, None
     
-    RNGInitializer(T::Type, range)::Func{T} = Func{T}(idx -> (rand(range), Bound{T}(first(range), last(range))))
+    None(range) = Wrapper(ST -> Func{ST}(idx -> 0))
+    RNG(range) = Wrapper(ST -> Func{ST}(idx -> (rand(range), Bound{ST}(first(range), last(range)))))
 end
 
 

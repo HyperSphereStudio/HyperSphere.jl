@@ -4,53 +4,51 @@ module CommonStaticFunctions
         using Base.MathConstants
         import ....@Fun
 
-        @Fun(Func{T}, T, arg::T)
+        @Fun(Func{InputType, OutputType}, OutputType, arg::InputType)
 
         export Sin, Cos, Tan, ASin, ACos, ATan, Tanh
-        Sin(T::Type) = Func{T}(x -> T(sin(x)))
-        Cos(T::Type) = Func{T}(x -> T(cos(x)))
-        Tan(T::Type) = Func{T}(x -> T(tan(x)))
-        ASin(T::Type) = Func{T}(x -> T(asin(x)))
-        ACos(T::Type) = Func{T}(x -> T(acos(x)))
-        ATan(T::Type) = Func{T}(x -> T(atan(x)))
-        Tanh(T::Type) = Func{T}(x -> T((e ^ x - e ^ -x) / (e ^ x + e ^ -x)))
+        Sin(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(sin(x)))
+        Cos(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(cos(x)))
+        Tan(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(tan(x)))
+        ASin(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(asin(x)))
+        ACos(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(acos(x)))
+        ATan(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(atan(x)))
+        Tanh(IT::Type, OT::Type) = Func{IT, OT}(x -> OT((e ^ x - e ^ -x) / (e ^ x + e ^ -x)))
 
         export RMax, RMin, LMax, LMin,Sigmoid
-        RMax(T::Type, Lower_Bound) = Func{T}(x -> T(max(Lower_Bound, x)))
-        RMin(T::Type, Lower_Bound) = Func{T}(x -> T(min(Lower_Bound, x)))
-        LMax(T::Type, Upper_Bound) = Func{T}(x -> T(max(x, Upper_Bound)))
-        LMin(T::Type, Upper_Bound) = Func{T}(x -> T(min(x, Upper_Bound)))
-        Sigmoid(T::Type) = Func{T}(x -> T(1 / (1 + e ^ -x)))
+        RMax(IT::Type, OT::Type, Lower_Bound) = Func{IT, OT}(x -> OT(max(Lower_Bound, x)))
+        RMin(IT::Type, OT::Type, Lower_Bound) = Func{IT, OT}(x -> OT(min(Lower_Bound, x)))
+        LMax(IT::Type, OT::Type, Upper_Bound) = Func{IT, OT}(x -> OT(max(x, Upper_Bound)))
+        LMin(IT::Type, OT::Type, Upper_Bound) = Func{IT, OT}(x -> OT(min(x, Upper_Bound)))
+        Sigmoid(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(1 / (1 + e ^ -x)))
 
         export Linear, Quadratic, Cubic, Sqrt
-        Linear(T::Type, slope, constant) = Func{T}(x -> slope * x + constant)
-        Quadratic(T::Type, a, b, c) = Func{T}(x -> T(a * x ^ 2 + b * x + c))
-        Cubic(T::Type, a, b, c, d) = Func{T}(x -> T(a * x ^ 3 + b * x ^ 2 + c * x + d))
-        Sqrt(T::Type) = Func{T}(x -> T(sqrt(x)))
+        Linear(IT::Type, OT::Type, slope, constant) = Func{IT, OT}(x -> OT(slope * x + constant))
+        Quadratic(IT::Type, OT::Type, a, b, c) = Func{IT, OT}(x -> OT(a * x ^ 2 + b * x + c))
+        Cubic(IT::Type, OT::Type, a, b, c, d) = Func{IT, OT}(x -> OT(a * x ^ 3 + b * x ^ 2 + c * x + d))
+        Sqrt(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(sqrt(x)))
 
 
         export LeftValuePieceWise, RightValuePieceWise
-        function LeftValuePieceWise(functions::AbstractArray{Func{T}}, values) where T
+        function LeftValuePieceWise(IT::Type, OT::Type, functions::AbstractArray{Func}, values)
             sort!(values)
-            Func{T}(
-                function (x)
+            return Func{IT, OT}(function (x)
                     i = 1
                     while i < length(values) && x < values[i]
                         i += 1
                     end
-                    functions[i](x)
+                    OT(functions[i](x))
                 end)
         end
     
-        function RightValuePieceWise(functions::AbstractArray{Func{T}}, values) where T
+        function RightValuePieceWise(IT::Type, OT::Type, functions::AbstractArray{Func}, values)
             sort!(values)
-            Func{T}(
-                function (x)
+            return Func{IT, OT}(function (x)
                     i = length(slopes)
                     while i > 1 && x > values[i]
                         i -= 1
                     end
-                    functions[i](x)
+                    OT(functions[i](x))
                 end)
         end
 
