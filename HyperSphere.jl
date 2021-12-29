@@ -1,18 +1,14 @@
 function hypersphere_install_pkgs(download_optional=false)
     Pkg.add("BlackBoxOptim")
-    Pkg.add("StaticArrays")
     Pkg.add("Lazy")
     Pkg.add("Reexport")
     Pkg.add("Combinatorics")
     Pkg.add("BenchmarkTools")
-    Pkg.add("Optim.jl")
-
 
     #Optional
     if download_optional
         Pkg.add("PyCall")
         Pkg.add("PyPlot")
-        Pkg.add("QuadGK")
     end
 end
 
