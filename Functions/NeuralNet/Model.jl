@@ -14,7 +14,7 @@ mutable struct ModelDesigner{StorageType, InputType, OutputType, InputSize, Outp
     constant_bounds::Vector{Bound{StorageType}}
     error_function::Error.Func{OutputType}
 
-    ModelDesigner(input_size::Int, output_size::Int; storagetype::Type = Double, inputtype::Type = Double, outputtype::Type = Double, error::Error.Wrapper = Error.None()) = 
+    ModelDesigner(; input_size::Int, output_size::Int, storagetype::Type = Double, inputtype::Type = Double, outputtype::Type = Double, error::Error.Wrapper = Error.None()) = 
         new{storagetype, inputtype, outputtype, input_size, output_size}(
             Vector{Layers.Layer}(undef, 0),
             zeros(storagetype, 0),

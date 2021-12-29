@@ -12,7 +12,7 @@ import .HyperSphere.Functions.Error
 include("../DataSets/MNIST/MNistDataSet.jl")
 
 function test()
-    designer = NeuralNet.ModelDesigner(28 * 28, 1, error = Error.Meanabserr())
+    designer = NeuralNet.ModelDesigner(input_size = 28 * 28, output_size = 1, error = Error.Meanabserr())
     rng_init = Initializer.RNG(-10.0:10.0)
     
     
