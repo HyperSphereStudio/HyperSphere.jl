@@ -1,6 +1,6 @@
 export NodeSetLayer
 
-function NodeSetLayer(input_size::Int, nodeWrappers::AbstractArray{Nodes.Node}, const_initializer)
+function NodeSetLayer(nodeWrappers::AbstractArray{Nodes.Node}, const_initializer; input_size::Int)
     return Wrapper(
                 function(ST, IT, OT)
                     nodes = [wrapper(ST, IT, OT) for wrapper in nodeWrappers]

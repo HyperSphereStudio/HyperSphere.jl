@@ -16,7 +16,7 @@ module Layers
         function Layer{ST, IT, OT, N, O}(const_size::Int, const_initializer::Initializer.Wrapper, layer_function::Func{ST, IT, OT}) where {ST, IT, OT, N, O}
             init_constants = Array{ST}(undef, const_size)
             constant_bounds = Array{Bound{ST}}(undef, const_size)
-            initializer = const_initializer(ST)
+            initializer = const_initializer !== nothing ? const_initializer(ST) : nothing
             for i in 1:length(init_constants)
                 res = initializer(i)
                 init_constants[i] =  res[1]

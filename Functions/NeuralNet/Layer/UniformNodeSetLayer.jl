@@ -1,6 +1,6 @@
 export UniformNodeSetLayer
 
-function UniformNodeSetLayer(input_size::Int, size::Int, wrapper::Nodes.Wrapper, const_initializer)
+function UniformNodeSetLayer(const_initializer, wrapper::Nodes.Wrapper; input_size::Int, output_size::Int)
     return Wrapper(
         function (ST, IT, OT)
             node = wrapper(ST, IT, OT)

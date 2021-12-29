@@ -19,19 +19,19 @@ function collect_data()
         inputs[i] = i
         outputs[i] = f(i)
     end
-    TrainAndTestSplit(Data.ReadArrayToDataSet(inputs, outputs); trainFrac = .8, sort_randomly = true)
+    TrainAndTestSplit(Data.ReadArrayToDataSet(inputs, outputs); trainFrac=.8, sort_randomly=true)
 end
 
 function test()
-    designer = NeuralNet.ModelDesigner(1, 1, error = Error.Meanabserr())
+    designer = NeuralNet.ModelDesigner(1, 1, error=Error.Meanabserr(), inputtype=Float64)
     rng_init = Initializer.RNG(-10.0:10.0)
-    push!(designer, Layers.UniformNodeSetLayer(1, 5, Nodes.VarRationalNode(num_terms = 5, denom_terms = 5), rng_init))
-    push!(designer, Layers.UniformNodeSetLayer(3, 1, Nodes.LinearNode(functional = Functional.∑()), rng_init))
+    push!(designer, Layers.UniformNodeSetLayer(rng_init, Nodes.VarRationalNode(num_terms=5, denom_terms=5), input_size=1, output_size=5))
+    push!(designer, Layers.UniformNodeSetLayer(rng_init, Nodes.LinearNode(functional=Functional.∑()), input_size=3, output_size=1))
     neuralnet = designer()
-    nettrainer = trainer(neuralnet, optimizer = Optimizer.blackboxoptimizer())
+    nettrainer = trainer(neuralnet, optimizer=Optimizer.blackboxoptimizer())
     data = collect_data()
     println("Pre Training Test: f(3.0) = $(f(3.0)). Neural Net:$(neuralnet([3.0])[1])")
-    train!(nettrainer, data[1]; epochs = 1, testset = data[2])
+    train!(nettrainer, data[1]; epochs=1, testset=data[2])
     println("After Training Test: f(3.0) = $(f(3.0)). Neural Net:$(neuralnet([3.0])[1])")
 end
 
