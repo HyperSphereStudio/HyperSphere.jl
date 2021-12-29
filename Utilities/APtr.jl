@@ -9,11 +9,18 @@ mutable struct APtr{T}
 
     Base.length(p::APtr) = p.len
     Base.getindex(p::APtr) = p.arr[p.ptr + 1]
-    Base.setindex!(p::APtr, v) = p.arr[p.ptr + 1] = v
+    Base.setindex!(p::APtr{T}, v) where T = p.arr[p.ptr + 1] = v
     Base.getindex(p::APtr, index::Int) = p.arr[index + p.ptr]
-    Base.setindex!(p::APtr, v, index::Int) = p.arr[index + p.ptr] = v
+    Base.setindex!(p::APtr{T}, v::T, index::Int) where T = p.arr[index + p.ptr] = v
     Base.:+(p::APtr, val) = p.ptr += val
     Base.:-(p::APtr, val) = p.ptr -= val
+    Base.iterate(p::APtr) = Base.iterate(p.arr)
+    Base.iterate(p::APtr, state) = Base.iterate(p.arr, state)
+    Base.getindex(cons::APtr, row_size, row, col) = cons[row_size * (row - 1) + col]
+    Base.setindex!(cons::APtr{T}, value, row_size, row, col) where T = cons[row_size * (row - 1) + col] = value
+
+    Base.getindex(cons::APtr, row_size, col_size, row, col, depth) = cons[row_size * (row - 1) + col_size * (col - 1) + depth]
+    Base.setindex!(cons::APtr{T}, value, row_size, col_size, row, col, depth) where T = cons[row_size * (row - 1) + col_size * (col - 1) + depth] = value
 end
 
 increment!(p::APtr) = incremenet!(p, 1)

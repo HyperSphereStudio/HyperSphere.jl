@@ -1,7 +1,7 @@
 module Functional
     using ..Utils
 
-    @Fun(Func{InputType}, InputType, inputs::Array{InputType, 1})
+    @Fun(Func{InputType}, InputType, inputs::APtr{InputType})
     @Fun(Wrapper, Func, InputType::Type)
 
     export ∑, None, ∏

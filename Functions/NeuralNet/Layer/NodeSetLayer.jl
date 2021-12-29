@@ -9,7 +9,7 @@ function NodeSetLayer(input_size::Int, nodeWrappers::AbstractArray{Nodes.Node}, 
                         constant_sum += node.constant_size
                     end
                     Layer{ST, IT, OT, input_size, length(nodes)}(constant_sum, const_initializer, 
-                        Func{ST, IT}(
+                        Func{ST, IT, OT}(
                             function (constant_pointer, inputs, outputs)
                                 for i in 1:length(nodes)
                                     outputs[i] = nodes[i](constant_pointer, inputs)

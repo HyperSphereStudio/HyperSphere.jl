@@ -59,8 +59,9 @@ struct Model{StorageType, InputType, OutputType, InputSize, OutputSize} <: Abstr
 
     function (f::Model{ST, IT, OT, I, O})(args::Array{IT, 1}) where {ST, IT, OT, I, O}
             const_ptr = APtr(f.constants)
+            inputs = APtr(args)
             for l in f.layers
-                    args = l(const_ptr, args)
+                    args = l(const_ptr, inputs)
             end
             args
     end
@@ -90,7 +91,20 @@ struct ModelTrainer{StorageType, InputType, OutputType, InputSize, OutputSize} <
         end
 end
 
-function Functions.train!(f::ModelTrainer{ST, IT, OT, I, O}, data::AbstractDataSet) where {ST, IT, OT, I, O}
-    f.optimizer(f.net.constants, Error.Func{OT}(() -> f.net.error_function(data, f.net)), f.net.constant_bounds)
+function Functions.train!(f::ModelTrainer{ST, IT, OT, I, O}, data::AbstractDataSet; epochs::Int = 1, IsVerbose=true, testset::AbstractDataSet=data) where {ST, IT, OT, I, O}
+    t = time()
+    err_func = Error.Func{OT}(() -> f.net.error_function(data, f.net))
+    test_func = Error.Func{OT}(() -> f.net.error_function(testset, f.net))
+    if IsVerbose
+        println("Initial: Data Error:", err_func(), ". Test Error:", test_func())
+    end
+    for i in 1:epochs
+        f.optimizer(f.net.constants, err_func, f.net.constant_bounds)
+        if IsVerbose
+            println("Epoch:$i. Took (", time() - t, ") ms. Data Error:", err_func(), ". Test Error:", test_func())
+            t = time()
+        end
+    end
+    (err_func(), test_func())
 end
 

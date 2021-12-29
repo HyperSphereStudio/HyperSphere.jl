@@ -3,7 +3,7 @@ module Layers
     import ..Initializer
     import ...AbstractObject
 
-    @VFun(Func{StorageType, InputType}, constant_pointer::APtr{StorageType}, inputs::Array{InputType, 1}, outputs::Array{StorageType, 1})
+    @VFun(Func{StorageType, InputType, OutputType}, constant_pointer::APtr{StorageType}, inputs::APtr{InputType}, outputs::APtr{OutputType})
     @Fun(Wrapper, layer::AbstractObject, StorageType::Type, InputType::Type, OutputType::Type)
 
     export Layer, InternalLayer
@@ -11,9 +11,9 @@ module Layers
     mutable struct Layer{ST, IT, OT, N, O} <: AbstractObject
         init_constants::Array{ST, 1}
         constant_bounds::Array{Bound{ST}, 1}
-        layer_function::Func{ST, IT}
+        layer_function::Func{ST, IT, OT}
 
-        function Layer{ST, IT, OT, N, O}(const_size::Int, const_initializer::Initializer.Wrapper, layer_function::Func{ST, IT}) where {ST, IT, OT, N, O}
+        function Layer{ST, IT, OT, N, O}(const_size::Int, const_initializer::Initializer.Wrapper, layer_function::Func{ST, IT, OT}) where {ST, IT, OT, N, O}
             init_constants = Array{ST}(undef, const_size)
             constant_bounds = Array{Bound{ST}}(undef, const_size)
             initializer = const_initializer(ST)
@@ -31,11 +31,11 @@ module Layers
     struct InternalLayer{ST, IT, OT, N ,O} <: AbstractObject
         const_length::Int
         layer_function::Func{ST, OT}
-        outputs::Array{OT, 1}
+        outputs::APtr{OT}
 
-        InternalLayer(l::Layer{ST, IT, OT, N, O}) where {ST, IT, OT, N, O} = new{ST, IT, OT, N, O}(length(l.init_constants), l.layer_function, zeros(OT, O))
+        InternalLayer(l::Layer{ST, IT, OT, N, O}) where {ST, IT, OT, N, O} = new{ST, IT, OT, N, O}(length(l.init_constants), l.layer_function, APtr(zeros(OT, O)))
 
-        function (l::InternalLayer{ST, IT, OT, N, O})(constant_pointer::APtr{ST}, inputs::Array{IT, 1}) where {ST, IT, OT, N, O}
+        function (l::InternalLayer{ST, IT, OT, N, O})(constant_pointer::APtr{ST}, inputs::APtr{IT}) where {ST, IT, OT, N, O}
             l.layer_function(constant_pointer, inputs, l.outputs)
             return l.outputs
         end

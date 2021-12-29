@@ -8,7 +8,7 @@ function UniformNodeSetLayer(input_size::Int, size::Int, wrapper::Nodes.Wrapper,
             nodem = node.merge
             nodea = node.activation
             Layer{ST, IT, OT, input_size, size}(node.constant_size * size, const_initializer, 
-                Func{ST, IT}(
+                Func{ST, IT, OT}(
                             function (constant_pointer, inputs, outputs)
                                 input = nodem(inputs)
                                 for i in 1:size

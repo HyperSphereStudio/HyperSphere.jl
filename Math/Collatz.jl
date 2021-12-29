@@ -58,6 +58,18 @@ function apply(f, x, m, n=1)
 end
 
 
-for i in 1:20
-    println(collatz_conj(i)[1])
+function collect_collatz(size)
+    xvals = zeros(Float64, size)
+    yvals = zeros(Float64, size)
+
+    for idx in 1:size
+        i = 2 * idx - 1
+        n = collatz_conj(i)[1]
+        f = length(n)
+        pow = sum_array(n, 1, f - 1)
+
+        xvals[idx] = idx
+        yvals[idx] = pow
+    end
+    (xvals, yvals)
 end
