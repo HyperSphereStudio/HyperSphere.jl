@@ -23,10 +23,10 @@ function collect_data()
 end
 
 function test()
-    designer = NeuralNet.ModelDesigner(input_size = 1, output_size = 1, error=Error.Meanabserr(), inputtype=Float64)
+    designer = NeuralNet.ModelDesigner(input_size=1, output_size=1, error=Error.Meanabserr(), inputtype=Float64)
     rng_init = Initializer.RNG(-10.0:10.0)
     push!(designer, Layers.UniformNodeSetLayer(rng_init, Nodes.VarRationalNode(num_terms=5, denom_terms=5), input_size=1, output_size=5))
-    push!(designer, Layers.UniformNodeSetLayer(rng_init, Nodes.LinearNode(functional=Functional.∑()), input_size=3, output_size=1))
+    push!(designer, Layers.UniformNodeSetLayer(rng_init, Nodes.LinearNode(functional=Functional.∑()), input_size=5, output_size=1))
     neuralnet = designer()
     nettrainer = trainer(neuralnet, optimizer=Optimizer.blackboxoptimizer())
     data = collect_data()
