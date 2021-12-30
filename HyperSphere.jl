@@ -1,9 +1,9 @@
 function hypersphere_install_pkgs(download_optional=false)
-    Pkg.add("BlackBoxOptim")
     Pkg.add("Lazy")
     Pkg.add("Reexport")
     Pkg.add("Combinatorics")
     Pkg.add("BenchmarkTools")
+    Pkg.add("MLDatasets")
 
     #Optional
     if download_optional

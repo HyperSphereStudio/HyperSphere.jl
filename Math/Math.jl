@@ -1,6 +1,6 @@
 module HSMath
 
-    export powi, optimize, offset_func, offset_calc, cplx_floor, cplx_ceil, cplx_mod
+    export powi, optimize, offset_func, offset_calc, cplx_floor, cplx_ceil, cplx_mod, ∏, ∑
 
     include("Primes.jl")
 
@@ -21,4 +21,36 @@ module HSMath
     cplx_ceil(x) = Base.ceil(real(x)) + Base.ceil(imag(x)) * im
 
     cplx_mod(base, num) = base - num * cplx_floor(base / num)
+
+    function ∏(array::NTuple{N, T}) where {T, N}
+        prod::T = 1
+        for arg in array
+            prod *= arg
+        end
+        prod
+    end
+
+    function ∏(array::AbstractArray{T}) where T
+        prod::T = 1
+        for arg in array
+            prod *= arg
+        end
+        prod
+    end
+
+    function ∑(array::AbstractArray{T}) where T
+        sum::T = 0
+        for arg in array
+            sum += arg
+        end
+        sum
+    end
+
+    function ∑(array::NTuple{N, T}) where {T, N}
+        sum::T = 0
+        for arg in array
+            sum += arg
+        end
+        sum
+    end
 end

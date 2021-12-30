@@ -7,12 +7,11 @@ function UniformNodeSetLayer(const_initializer, wrapper::Nodes.Wrapper; input_si
             nodef = node.fun
             nodem = node.merge
             nodea = node.activation
-            Layer{ST, IT, OT, input_size, size}(node.constant_size * size, const_initializer, 
+            Layer{ST, IT, OT, input_size, output_size}(node.constant_size * output_size, const_initializer, 
                 Func{ST, IT, OT}(
                             function (constant_pointer, inputs, outputs)
-                                input = nodem(inputs)
-                                for i in 1:size
-                                    outputs[i] = nodea(nodef(constant_pointer, input))
+                                for i in 1:output_size
+                                    outputs[i] = nodea(nodef(constant_pointer, nodem(inputs, i)))
                                     increment!(constant_pointer, node.constant_size)
                                 end
                             end))

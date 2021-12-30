@@ -13,7 +13,7 @@ module Layers
         constant_bounds::Array{Bound{ST}, 1}
         layer_function::Func{ST, IT, OT}
 
-        function Layer{ST, IT, OT, N, O}(const_size::Int, const_initializer::Initializer.Wrapper, layer_function::Func{ST, IT, OT}) where {ST, IT, OT, N, O}
+        function Layer{ST, IT, OT, N, O}(const_size::Int, const_initializer, layer_function::Func{ST, IT, OT}) where {ST, IT, OT, N, O}
             init_constants = Array{ST}(undef, const_size)
             constant_bounds = Array{Bound{ST}}(undef, const_size)
             initializer = const_initializer !== nothing ? const_initializer(ST) : nothing
@@ -48,5 +48,6 @@ module Layers
     include("NodeSetLayer.jl")
     include("UniformNodeSetLayer.jl")
     include("ConvolutionalLayer.jl")
+    include("SoftmaxLayer.jl")
 end
 

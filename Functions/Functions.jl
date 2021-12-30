@@ -19,7 +19,7 @@ module Functions
     abstract type AbstractTrainer{T, N} <: AbstractMathFun{T, N} end
 
     include("Error.jl")
-    include("Optimizer.jl")
+    include("Optimization/Optimizer.jl")
 
     trainer(f::AbstractMathFun; precision=10) = ()
     trainer(f::AbstractMathFun, optimizer::Optimizer.Wrapper) = ()

@@ -12,7 +12,7 @@ function NodeSetLayer(nodeWrappers::AbstractArray{Nodes.Node}, const_initializer
                         Func{ST, IT, OT}(
                             function (constant_pointer, inputs, outputs)
                                 for i in 1:length(nodes)
-                                    outputs[i] = nodes[i](constant_pointer, inputs)
+                                    outputs[i] = nodes[i](constant_pointer, inputs, i)
                                     increment!(constant_pointer, nodes[i].constant_size)
                                 end
                             end))

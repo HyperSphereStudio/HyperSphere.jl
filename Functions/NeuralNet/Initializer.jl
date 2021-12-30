@@ -7,7 +7,7 @@ module Initializer
     export RNG, None
     
     None(range) = Wrapper(ST -> Func{ST}(idx -> 0))
-    RNG(range) = Wrapper(ST -> Func{ST}(idx -> (rand(range), Bound{ST}(first(range), last(range)))))
+    RNG(range;) = Wrapper(ST -> Func{ST}(idx -> (rand(range), Bound{ST}(first(range), last(range)))))
 end
 
 

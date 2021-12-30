@@ -47,6 +47,7 @@ struct SplitDataSet{T, I, O} <: AbstractDataSet{T, I, O}
         return new{T, I, O}(parentSet, thisWrapper, length, offset)
     end
 
+    Base.size(set::SplitDataSet) = length(set)
     Base.length(set::SplitDataSet)::Int = set.length
     Base.getindex(set::SplitDataSet{T, I, O}, row) where {T, I, O} = set.parentSet[set.elementChooser(row + set.offset)]
     Base.setindex!(set::SplitDataSet{T, I, O}, value::DataEntry{T, I, O}, row) where {T, I, O} = set.parentSet[set.elementChooser(row + set.offset)] = value
@@ -67,6 +68,5 @@ function TrainAndTestSplit(x::AbstractDataSet; trainFrac=.8, sort_randomly=true)
 end
 
 function randombatch(x::AbstractDataSet, batch_size)
-    len = length(x)
-    return SplitDataSet(x, batch_size; chooser = Wrapper((T, I, O, offset, length) -> ElementChooser{T, I, O}(row -> rand(1:len))))
+    return SplitDataSet(x, batch_size; chooser = Wrapper((T, I, O, offset, len) -> ElementChooser{T, I, O}(row -> rand(1:len))))
 end

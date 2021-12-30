@@ -7,8 +7,6 @@ module Activation
     @Fun(Func{InputType, OutputType}, out::OutputType, in::InputType)
     @Fun(Wrapper, Func, InputType::Type, OutputType::Type)
 
-    const Wrapper = Fun{Func, Tuple{InputType, OutputType}}
-
     Sigmoid() = Wrapper((IT, OT) -> Func{IT, OT}(Single.Sigmoid(IT, OT)))
     Tanh() = Wrapper((IT, OT) -> Func{IT, OT}(Single.Tanh(IT, OT)))
     ZeroMax() = Wrapper((IT, OT) -> Func{IT, OT}(Single.RMax(IT, OT, 0)))

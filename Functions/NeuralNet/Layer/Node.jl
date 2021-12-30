@@ -17,7 +17,7 @@ module Nodes
 
         Node{ST, IT, OT}(merge::Functional.Wrapper, fun::Func, activation::Activation.Wrapper, constant_size) where {ST, IT, OT} = new{ST, IT, OT}(merge(IT), fun, activation(IT, OT), UInt16(constant_size))
 
-        (node::Node{ST, IT, OT})(constants::APtr{ST}, args::Array{IT, 1}) where {ST, IT, OT} = node.activation(node.fun(constants, node.merge(args)))
+        (node::Node{ST, IT, OT})(constants::APtr{ST}, args::Array{IT, 1}, idx::Int) where {ST, IT, OT} = node.activation(node.fun(constants, node.merge(args, idx)))
     end
 
     function calc_poly(IT, OT, powers, arg, constants; cons_offset = 0)
@@ -52,6 +52,13 @@ module Nodes
         end
         OT(sum)
     end
+
+    NoneNode(; functional::Functional.Wrapper = Functional.None(), activation::Activation.Wrapper = Activation.None()) = 
+        return Wrapper((ST, IT, OT) -> Node{ST, IT, OT}(
+                            functional,
+                            Func{ST, IT, OT}((constants, arg) -> arg),
+                            activation,
+                            0))  
 
     LinearNode(; functional::Functional.Wrapper = Functional.None(), activation::Activation.Wrapper = Activation.None())  = PolyNode(powers=0:1, functional=functional, activation=activation)  
     QuadraticNode(; functional::Functional.Wrapper = Functional.None(), activation::Activation.Wrapper = Activation.None()) = PolyNode(powers=0:2, functional=functional, activation=activation)       
