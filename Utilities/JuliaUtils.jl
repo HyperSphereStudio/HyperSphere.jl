@@ -1,4 +1,4 @@
-"Written By Johnathan Bizzano"
+#Written By Johnathan Bizzano
 export @nullc, eqerror, getbit, setbit, bytesof,
 matrixbytesof, objectof, matrixobjectof, issupertype, matrixbitsof, bitsof,
 arraybytesof, arrayobjectof, arraybitsof, pass_func, proto, findOrIsMethod, FakeMethod

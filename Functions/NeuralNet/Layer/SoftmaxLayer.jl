@@ -1,4 +1,4 @@
-"Written By Johnathan Bizzano"
+#Written By Johnathan Bizzano
 export SoftmaxLayer
 
 

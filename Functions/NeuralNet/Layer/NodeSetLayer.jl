@@ -1,4 +1,4 @@
-"Written By Johnathan Bizzano"
+#Written By Johnathan Bizzano
 export NodeSetLayer
 
 function NodeSetLayer(nodeWrappers::AbstractArray{Nodes.Node}, const_initializer; input_size::Int)

@@ -1,4 +1,4 @@
-"Written By Johnathan Bizzano"
+#Written By Johnathan Bizzano
 
 export Fun, VFun, RFun, NFun, NVFun, NRFun, EFun, NEFun,
              @Fun, @VFun, @RFun, @NFun, @NVFun, @NRFun, @EFun, @NEFun, FunDef, @DocFun, @CFun

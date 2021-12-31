@@ -1,6 +1,6 @@
-"Written By Johnathan Bizzano"
 include("../HyperSphere.jl")
 
+#Written By Johnathan Bizzano
 using .HyperSphere
 import .HyperSphere.Functions.Optimizer
 import .HyperSphere.Functions.NeuralNet.Layers

@@ -2,7 +2,7 @@ export Reader
 
 
 @Fun(Reader{T, InputDim, OutputDim}, DataEntry{T, InputDim, OutputDim}, row::Int)
-"Written By Johnathan Bizzano"
+#Written By Johnathan Bizzano
 struct LazyDataSet{T, InputDim, OutputDim} <: AbstractDataSet{T, InputDim, OutputDim}
     reader::Reader{T, InputDim, OutputDim}
     data::Array{DataEntry{T, InputDim, OutputDim}}
