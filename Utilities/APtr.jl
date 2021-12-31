@@ -1,4 +1,5 @@
-export APtr, increment!, decrement!
+"Written By Johnathan Bizzano"
+export APtr, increment!, decrement!, boundcheck
 
 mutable struct APtr{T}
     arr::AbstractArray{T}
@@ -16,14 +17,10 @@ mutable struct APtr{T}
     Base.:-(p::APtr, val) = p.ptr -= val
     Base.iterate(p::APtr) = Base.iterate(p.arr)
     Base.iterate(p::APtr, state) = Base.iterate(p.arr, state)
-    Base.getindex(cons::APtr, row_size, row, col) = cons[row_size * (row - 1) + col]
-    Base.setindex!(cons::APtr{T}, value, row_size, row, col) where T = cons[row_size * (row - 1) + col] = value
-
-    Base.getindex(cons::APtr, row_size, col_size, row, col, depth) = cons[row_size * (row - 1) + col_size * (col - 1) + depth]
-    Base.setindex!(cons::APtr{T}, value, row_size, col_size, row, col, depth) where T = cons[row_size * (row - 1) + col_size * (col - 1) + depth] = value
 end
 
 increment!(p::APtr) = incremenet!(p, 1)
 decrement!(p::APtr) = decremenet!(p, 1)
 increment!(p::APtr, n) = p.ptr += n
 decrement!(p::APtr, n) = p.ptr -= n
+

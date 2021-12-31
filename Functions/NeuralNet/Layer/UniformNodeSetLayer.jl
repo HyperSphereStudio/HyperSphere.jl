@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 export UniformNodeSetLayer
 
 function UniformNodeSetLayer(const_initializer, wrapper::Nodes.Wrapper; input_size::Int, output_size::Int)

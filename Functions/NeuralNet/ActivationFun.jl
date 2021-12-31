@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 module Activation
     import ..@Fun
     import ...CommonStaticFunctions.Single

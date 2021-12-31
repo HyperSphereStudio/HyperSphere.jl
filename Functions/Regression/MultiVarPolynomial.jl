@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 export MultiVarPolynomial
 
 struct MultiVarPolynomial{T, N} <: AbstractMathFun{T, N}

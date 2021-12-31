@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 export RegressableSummation, RegressableSummationTrainer
 
 using LinearAlgebra

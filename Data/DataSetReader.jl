@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 export ReadArrayToDataSet
 
 function ReadArrayToDataSet(inputs::AbstractArray{T}, outputs::AbstractArray{T}) where T

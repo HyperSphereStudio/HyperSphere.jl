@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 function hypersphere_install_pkgs(download_optional=false)
     Pkg.add("Lazy")
     Pkg.add("Reexport")

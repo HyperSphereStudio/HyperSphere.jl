@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 module Functional
     using ..Utils
 

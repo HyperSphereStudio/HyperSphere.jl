@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 import ..Error
 import ..Layer
 import ..Optimizer

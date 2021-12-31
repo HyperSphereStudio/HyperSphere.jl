@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 export vnorm, vmathlen, gradient!
 
 import ..Fun

@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 module Optimizer
     using ..Utils
     import ..ConstantPool

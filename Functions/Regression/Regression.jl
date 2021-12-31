@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 module Regression
     using ...Functions
     using ...Data

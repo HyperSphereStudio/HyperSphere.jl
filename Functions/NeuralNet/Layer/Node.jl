@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 module Nodes
     import ...Activation
     import ..Functional

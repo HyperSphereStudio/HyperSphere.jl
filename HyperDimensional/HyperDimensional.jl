@@ -1,3 +1,4 @@
+"Written By Johnathan Bizzano"
 module HyperDimensional
     
     struct DimensionException <: Exception
@@ -10,7 +11,7 @@ module HyperDimensional
     export DimensionException
 
     include("Iteration.jl")
-    include("Math.jl")
     include("ArrayUtils.jl")
-
+    include("MDArrayInterpreter.jl")
+    
 end

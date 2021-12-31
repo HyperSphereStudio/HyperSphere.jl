@@ -1,9 +1,4 @@
-#=
-Function:
-- Julia version:
-- Author: JohnB
-- Date: 2021-10-03
-=#
+"Written By Johnathan Bizzano"
 
 using ..Functions
 using ...HyperSphere

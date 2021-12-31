@@ -1,6 +1,6 @@
 module HSMath
 
-    export powi, optimize, offset_func, offset_calc, cplx_floor, cplx_ceil, cplx_mod, ∏, ∑
+    export powi, optimize, offset_func, offset_calc, cplx_floor, cplx_ceil, cplx_mod, ∏, ∑, ≆, ≊
 
     include("Primes.jl")
 
@@ -12,6 +12,10 @@ module HSMath
 
        Returns required such that O(f(g(x))) = f(g(x) + C). Solves for C
     """
+
+    ≆(x, p) = !isapprox(x, p)
+    ≊(x, p) = isapprox(x, p)
+
     offset_func(f::Function, f_inv::Function, g::Function, operator::Function) = x -> offset_calc(x, f, f_inv, g, operator)
 
     offset_calc(x, f::Function, f_inv::Function, g::Function, operator::Function) = f_inv(operator(f(g(x)))) - g(x)

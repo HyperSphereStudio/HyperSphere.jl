@@ -1,4 +1,5 @@
 "Adapted From: https://machinelearningmastery.com/differential-evolution-from-scratch-in-python/"
+"Written By Johnathan Bizzano"
 
 export diffevorandomsinglebin
 
