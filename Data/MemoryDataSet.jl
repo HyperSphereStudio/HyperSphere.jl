@@ -1,16 +1,23 @@
 export MemoryDataSet
 
 "In Memory Data Set"
-struct MemoryDataSet{T, InputDim, OutputDim} <: AbstractDataSet{T, InputDim, OutputDim}
-    data::Vector{DataEntry{T, InputDim, OutputDim}}
+struct MemoryDataSet{InputType, OutputType, Device} <: AbstractDataSet{InputType, OutputType}
+    data::Vector{DataEntry{InputType, OutputType}}
 
-    MemoryDataSet{T, I, O}(length = 0) where {T, I, O} = new{T, I, O}(Vector{DataEntry{T, I, O}}(undef, length))
-    Base.iterate(set::MemoryDataSet) = Base.iterate(set.data)
-    Base.iterate(set::MemoryDataSet, state) = Base.iterate(set.data, state)
-    Base.append!(set::MemoryDataSet{T, I, O}, set2::Vector{DataEntry{T, I, O}}) where {T, I, O} = append!(set.data, set2)
-    Base.push!(set::MemoryDataSet{T, I, O}, entry::DataEntry{T, I, O}) where {T, I, O} = push!(set, entry)
-    Base.getindex(set::MemoryDataSet{T, I, O}, row) where {T, I, O} = set.data[row]
-    Base.setindex!(set::MemoryDataSet{T, I, O}, value::DataEntry{T, I, O}, row) where {T, I, O} = set.data[row] = value
-    Base.deleteat!(set::MemoryDataSet{T, I, O}, idxes) where {T, I, O} = deleteat!(set, idxes)
+    function MemoryDataSet(set::AbstractDataSet{I, O}) where {I, O}
+        (set isa MemoryDataSet) && return set
+        newSet = MemoryDataSet{I, O}(length(set))
+        for i in eachindex(set)
+            newSet[i] = set[i]
+        end
+        newSet
+    end
+
+    MemoryDataSet{I, O}(length = 0) where {I, O} = new{I, O}(Vector{DataEntry{I, O}}(undef, length))
+    Base.append!(set::MemoryDataSet{I, O}, set2::Vector{DataEntry{I, O}}) where {I, O} = append!(set.data, set2)
+    Base.push!(set::MemoryDataSet{I, O}, entry::DataEntry{I, O}) where {I, O} = push!(set, entry)
+    Base.getindex(set::MemoryDataSet, row) = set.data[row]
+    Base.setindex!(set::MemoryDataSet{I, O}, value::DataEntry{I, O}, row) where {I, O} = set.data[row] = value
+    Base.deleteat!(set::MemoryDataSet, idxes) = deleteat!(set, idxes)
     Base.length(set::MemoryDataSet)::Int64 = length(set.data)
 end

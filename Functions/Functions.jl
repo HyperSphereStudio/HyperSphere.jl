@@ -7,11 +7,9 @@ module Functions
 
     export AbstractTrainable, train, train!, AbstractTrainer
 
-    export Input, ConstantPool, Output
+    export ConstantPool
 
     const ConstantPool{T} = Array{T, 1}
-    const Input{T, Len} = NTuple{Len, T}
-    const Output{T, Len} = NTuple{Len, T}
 
     include("AbstractMathFun.jl")
     include("CommonStaticFunctions.jl")
@@ -32,9 +30,5 @@ module Functions
 
     include("Regression/Regression.jl")
     @reexport using .Regression
-
-    include("NeuralNet/NeuralNet.jl")
-    @reexport using .NeuralNet
-    
 
 end

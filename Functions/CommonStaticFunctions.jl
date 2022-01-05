@@ -5,52 +5,65 @@ module CommonStaticFunctions
         using Base.MathConstants
         import ....@Fun
 
-        @Fun(Func{InputType, OutputType}, OutputType, arg::InputType)
-
         export Sin, Cos, Tan, ASin, ACos, ATan, Tanh
-        Sin(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(sin(x)))
-        Cos(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(cos(x)))
-        Tan(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(tan(x)))
-        ASin(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(asin(x)))
-        ACos(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(acos(x)))
-        ATan(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(atan(x)))
-        Tanh(IT::Type, OT::Type) = Func{IT, OT}(x -> OT((e ^ x - e ^ -x) / (e ^ x + e ^ -x)))
+
+        Wrap(sig::Signature, f::Function) = MemoryWrapper(
+            sig,
+            function (sett)
+                IT = sett.inputType
+                return arg -> IT(f(arg))
+            end
+        )
+
+        Sin() = Wrap(Sig(:Sin), sin)
+        Cos() = Wrap(Sig(:Cos), cos)
+        Tan() = Wrap(Sig(:Tan), tan)
+        ASin() = Wrap(Sig(:ASin), asin)
+        ACos() = Wrap(Sig(:ACos), acos)
+        ATan() = Wrap(Sig(:ATan), atan)
+        Tanh() = Wrap(Sig(:Tanh), x -> (e ^ x - e ^ -x) / (e ^ x + e ^ -x))
 
         export RMax, RMin, LMax, LMin,Sigmoid
-        RMax(IT::Type, OT::Type, Lower_Bound) = Func{IT, OT}(x -> OT(max(Lower_Bound, x)))
-        RMin(IT::Type, OT::Type, Lower_Bound) = Func{IT, OT}(x -> OT(min(Lower_Bound, x)))
-        LMax(IT::Type, OT::Type, Upper_Bound) = Func{IT, OT}(x -> OT(max(x, Upper_Bound)))
-        LMin(IT::Type, OT::Type, Upper_Bound) = Func{IT, OT}(x -> OT(min(x, Upper_Bound)))
-        Sigmoid(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(1 / (1 + e ^ -x)))
+        RMax(Lower_Bound) = Wrap(Sig(:RMax), x -> max(Lower_Bound, x))
+        RMin(Lower_Bound) = Wrap(Sig(:RMin), x -> min(Lower_Bound, x))
+        LMax(Upper_Bound) = Wrap(Sig(:LMax), x -> max(x, Upper_Bound))
+        LMin(Upper_Bound) = Wrap(Sig(:LMin), x -> min(x, Upper_Bound))
+        Sigmoid() = Wrap(Sig(:Sigmoid), x -> 1 / (1 + e ^ -x))
 
         export Linear, Quadratic, Cubic, Sqrt
-        Linear(IT::Type, OT::Type, slope, constant) = Func{IT, OT}(x -> OT(slope * x + constant))
-        Quadratic(IT::Type, OT::Type, a, b, c) = Func{IT, OT}(x -> OT(a * x ^ 2 + b * x + c))
-        Cubic(IT::Type, OT::Type, a, b, c, d) = Func{IT, OT}(x -> OT(a * x ^ 3 + b * x ^ 2 + c * x + d))
-        Sqrt(IT::Type, OT::Type) = Func{IT, OT}(x -> OT(sqrt(x)))
+        Add(constant) = Wrap(Sig(:Add), x -> x + constant)
+        Multiply(constant) = Wrap(Sig(:Multiply), x -> x * constant)
+        Linear(slope, constant) = Wrap(Sig(:Linear), x -> slope * x + constant)
+        Quadratic(a, b, c) = Wrap(Sig(:Quadratic), x -> a * x ^ 2 + b * x + c)
+        Cubic(a, b, c, d) = Wrap(Sig(:Cubic), x -> a * x ^ 3 + b * x ^ 2 + c * x + d)
+        Sqrt() = Wrap(Sig(:Sqrt), sqrt)
 
 
         export LeftValuePieceWise, RightValuePieceWise
-        function LeftValuePieceWise(IT::Type, OT::Type, functions::AbstractArray{Func}, values)
+        function LeftValuePieceWise(functions::AbstractArray{Func}, values)
             sort!(values)
-            return Func{IT, OT}(function (x)
+            return Wrap(
+                Sig(:LeftValuePieceWise),
+                function (x)
                     i = 1
                     while i < length(values) && x < values[i]
                         i += 1
                     end
-                    OT(functions[i](x))
+                    functions[i](x)
                 end)
         end
     
-        function RightValuePieceWise(IT::Type, OT::Type, functions::AbstractArray{Func}, values)
+        function RightValuePieceWise(functions::AbstractArray{Func}, values)
             sort!(values)
-            return Func{IT, OT}(function (x)
-                    i = length(slopes)
-                    while i > 1 && x > values[i]
-                        i -= 1
-                    end
-                    OT(functions[i](x))
-                end)
+            return Wrap(
+                Sig(:RightValuePieceWise), 
+                    function (x)
+                        i = length(slopes)
+                        while i > 1 && x > values[i]
+                            i -= 1
+                        end
+                        functions[i](x)
+                    end)
         end
 
     end

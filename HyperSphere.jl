@@ -5,6 +5,9 @@ function hypersphere_install_pkgs(download_optional=false)
     Pkg.add("Combinatorics")
     Pkg.add("BenchmarkTools")
     Pkg.add("MLDatasets")
+    Pkg.add("CUDA")
+    Pkg.add("LoopVectorization")
+    Pkg.add("StaticArrays")
 
     #Optional
     if download_optional
@@ -17,6 +20,7 @@ module HyperSphere
     import Pkg
     using Reexport
     using Lazy
+    using CUDA
 
     const Double = Float64
     abstract type AbstractObject end
@@ -29,6 +33,9 @@ module HyperSphere
     include("Utilities/Utils.jl")
     @reexport using .Utils
 
+    include("Computation/Device.jl")
+    @reexport using .Devices
+
     include("Math/Math.jl")
     @reexport using .HSMath
 
@@ -38,10 +45,15 @@ module HyperSphere
     include("Data/Data.jl")
     @reexport using .Data
 
-    include("Vector/Vector.jl")
-    @reexport using .MVector
-
     include("Functions/Functions.jl")
     @reexport using .Functions
 
+    include("NeuralNet/NeuralNet.jl")
+    @reexport using .NeuralNet
+
+
+
+    function __init__()
+        __init_device__()
+    end
 end

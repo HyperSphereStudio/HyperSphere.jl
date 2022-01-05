@@ -17,9 +17,7 @@ module Utils
         Entry(key::K, value::V) where {K, V} = new{K, V}(K(key), V(value))
     end
     
-
     include("Fun.jl")
-    include("APtr.jl")
     include("JuliaUtils.jl")
     include("Iterable.jl")
 end

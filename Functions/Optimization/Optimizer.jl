@@ -4,32 +4,31 @@ module Optimizer
     import ..ConstantPool
     import ..Error
     import ...MVector
-    
+
+    @Fun(Func{DeviceArray, StorageType}, result_constants::Tuple{DeviceArray, Float64}, 
+            init_constants::DeviceArray, err_func::Error.WrappedFunc,
+            lower_constant_bound::StorageType, upper_constant_bound::StorageType)
+
+    @Fun(Problem{DeviceArray, StorageType}, output::Float64, new_constants::DeviceArray)
+
     include("DeRand1Bin.jl")
 
-    @Fun(Func{StorageType, OutputType}, result_constants::ConstantPool{StorageType}, init_constants::ConstantPool{StorageType}, err_func::Error.Func{OutputType}, constant_bounds::Array{Bound{StorageType}})
-    @Fun(Wrapper, Func, StorageType::Type, OutputType::Type)
-
-    function copywraperror(cons, err_func::Error.Func{T}) where T
-        const_count = length(cons)
-        Error.Func{T}(
+    function copywraperror(cons::A, err_func::Error.WrappedFunc) where {A}
+        Problem{A}(
             function (constants)
-                for i in 1:const_count
-                    cons[i] = constants[i]
-                end
+                copy!(cons, constants)
                 return err_func()
             end)
     end
     
 
-    function de_rand_1_bin(; population_size, iterations, scalefactor = .8, crossoverrate = .7, rnginterval = 1E-8)
-        return Wrapper((ST, OT) -> 
-                Func{ST, OT}(
-                    function (cons_pool, error_func, cons_bounds)
-                        res = diffevorandomsinglebin(copywraperror(cons_pool, error_func), copy(cons_pool), cons_bounds, population_size,
-                             iterations, scalefactor = scalefactor, crossoverrate = crossoverrate, rnginterval = rnginterval)
-                        copy!(cons_pool, res)
-                        return res
+    function de_rand_1_bin(; population_size, iterations, scalefactor = .8, crossoverrate = .7, rnginterval = 1E-8, IsVerbose=true)
+        return MemoryWrapper(sett -> Func{sett.deviceArray, sett.storageType}(
+                    function (cons_pool, error_func, lower_bound, upper_bound)
+                        return diffevorandomsinglebin(sett.device, copywraperror(cons_pool, error_func), copy(cons_pool), 
+                                lower_bound, upper_bound, population_size,
+                                iterations, scalefactor=scalefactor, crossoverrate=crossoverrate, 
+                                rnginterval=rnginterval, IsVerbose=IsVerbose)
                     end))
     end
 

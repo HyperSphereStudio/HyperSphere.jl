@@ -4,32 +4,21 @@
 export diffevorandomsinglebin
 
 #Mutate the genes
-function mutate(a, b, c, result_array, scalefactor)
-    for i in 1:length(a)
-        result_array[i] = a[i] + scalefactor * (b[i] - c[i]) 
-    end
+function mutate(a, b, c, scalefactor)
+    return a + scalefactor * (b - c) 
 end
 
-#Clip the mutated genes
-function clip(mutated, bounds)
-    for i in 1:length(mutated)
-        if mutated[i] < bounds[i].lower_bound
-            mutated[i] = bounds[i].lower_bound
-        elseif mutated[i] > bounds[i].upper_bound
-            mutated[i] = bounds[i].upper_bound
-        end
+#Perform gene binomial crossover & clip the mutated genes
+function clipNCrossover(mutated, lower_bound, upper_bound, target, cr)
+    if rand() >= cr
+        return target
     end
-end
-
-#Perform gene binomial crossover
-function crossover(mutated, target, dim_count, cr)
-    i = 1
-    for r in rand(dim_count)
-        if r >= cr
-            mutated[i] = target[i]
-        end
-        i += 1
+    if mutated < lower_bound
+        return lower_bound
+    elseif mutated > upper_bound
+        return upper_bound
     end
+    return mutated
 end
 
 function choose_individual(population, excluded_individuals...)
@@ -40,70 +29,66 @@ function choose_individual(population, excluded_individuals...)
     choice
 end
 
-struct Bound{T <: Number}
-    lower_bound::T
-    upper_bound::T
-    Bound{T}(lower_bound, upper_bound) where T = new{T}(T(lower_bound), T(upper_bound))
-    Bound(lower_bound::T, upper_bound::T) where T = new{T}(lower_bound, upper_bound)
-end
+init_rand(lower_bound, upper_bound, rnginterval) = rand(lower_bound:rnginterval:upper_bound)
 
 
 "Differential Evolution of DeRand1Bin algorithm. ScaleFactor ∈ [0, 2]. CrossoverRate ∈ [0, 1]"
-function diffevorandomsinglebin(error_func, initial_values::Array{T, 1}, bounds::Array{Bound{T}, 1}, population_size::Int, iterations::Int; scalefactor = .8, crossoverrate = .7, rnginterval = 1E-8) where T
+function diffevorandomsinglebin(device::Device, error_func::Problem{T}, initial_values::AbstractArray{T}, 
+            lower_bound::T, upper_bound::T, population_size::Int, iterations::Int; 
+            scalefactor = .8, crossoverrate = .7, rnginterval = 1E-8, IsVerbose=true) where T
+
     (scalefactor > 2 || scalefactor < 0) && error("Scale Factor ∈ [0, 2]")
     (crossoverrate > 1 || crossoverrate < 0) && error("Cross Over Rate ∈ [0, 1]")
     (population_size < 4) && error("Population Size Must Be > 3")
 
     dims = length(initial_values)
-    tempArray = zeros(T, dims)
+    mutated = alloc(device, T, dims)
     
-    #Create Population with Initial Values
-    population = Array{Array{T, 1}, 1}(undef, population_size)
-    population[1] = initial_values
-    for i in 2:population_size
-        population[i] = zeros(T, dims)
-        for d in 1:dims
-            population[i][d] = rand(bounds[d].lower_bound:rnginterval:bounds[d].upper_bound)
-        end
-    end
+    #Create Population with Initial Values as first entry
+    population = alloc(device, population_size, dims)
+    copy!(view(population, 1, 1:dims), initial_values)
+
+    #Initialize Random
+    broadcast!(init_rand, view(population, 2:population_size, dims), lower_bound, upper_bound, rnginterval)
 
     #Init Eval
     errors = [error_func(ind) for ind in population]
  
     #Find the Best Init Performer
     best_idx = argmin(errors)
-    best_ind = population[best_idx]
     best_error = errors[best_idx]
     prev_error = best_error
 
     for i in 1:iterations
         #Iterate all current Solutions
         for j in 1:population_size
-            selected = population[j]
+            selected = view(population, j, 1:dims)
             #Choose Three Individuals in Population (Not Current)
             idx1 = choose_individual(population, j)
             idx2 = choose_individual(population, j, idx1)
             idx3 = choose_individual(population, j, idx1, idx2)
-            
-            mutate(population[idx1], population[idx2], population[idx3], tempArray, scalefactor)
-            clip(tempArray, bounds)
-            crossover(tempArray, selected, dims, crossoverrate)
+        
+            broadcast!(mutate, mutated, view(population, idx1, 1:dims), view(population, idx2, 1:dims), view(population, idx3, 1:dims), scalefactor)
+            broadcast!(clipNCrossover, mutated, lower_bound, upper_bound, selected, crossoverrate)
 
             #Check to see if crossover was better then current individual
-            crossover_error = error_func(tempArray)
+            crossover_error = error_func(mutated)
             if crossover_error < error_func(selected)
-                copy!(selected, tempArray)
+                copy!(selected, mutated)
                 errors[j] = crossover_error
             end
         end
 
         #Check Best Performer in this iteratation
-        best_idx = argmin(errors) 
-        if errors[best_idx] < prev_error
-            best_ind = population[best_idx]
-            prev_error = errors[best_idx]
+        idx = argmin(errors) 
+        if errors[idx] < prev_error
+            prev_error = errors[idx]
+            best_error = prev_error
+            best_idx = idx
         end
+        
+        (IsVerbose) && println("Iter:$i. Best Error:$best_error")
     end
 
-    return best_ind
+    return (population[best_idx], best_error)
 end

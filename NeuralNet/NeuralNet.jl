@@ -6,6 +6,7 @@ module NeuralNet
         using ..Functions
 
 
+        include("Processor.jl")
         include("Initializer.jl")
         include("ActivationFun.jl")
         include("Layer/Layer.jl")

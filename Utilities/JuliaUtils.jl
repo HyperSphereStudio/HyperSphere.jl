@@ -1,17 +1,18 @@
 #Written By Johnathan Bizzano
 export @nullc, eqerror, getbit, setbit, bytesof,
 matrixbytesof, objectof, matrixobjectof, issupertype, matrixbitsof, bitsof,
-arraybytesof, arrayobjectof, arraybitsof, pass_func, proto, findOrIsMethod, FakeMethod
+arraybytesof, arrayobjectof, arraybitsof, pass_func, proto, findOrIsMethod, FakeMethod, abstract
 
-
+"Puts abstract implementation error"
+macro abstract(expr)
+      return :($expr = error("Abstract Implementation!"))
+end
 
 struct FakeMethod{T}
       obj::T
       FakeMethod(obj::T) where T = new{T}(obj)
       (x::FakeMethod)(args...) = x.obj
 end
-
-
 
 function findOrIsMethod(CheckMod::Module, MethodOrName)
       MethodOrName isa Method && return FakeMethod(MethodOrName)  

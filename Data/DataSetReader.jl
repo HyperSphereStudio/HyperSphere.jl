@@ -1,21 +1,12 @@
 #Written By Johnathan Bizzano
 export ReadArrayToDataSet
 
-function ReadArrayToDataSet(inputs::AbstractArray{T}, outputs::AbstractArray{T}) where T
-    if length(size(inputs)) == 2
-        input_len = size(inputs, 2)
-        output_len = size(outputs, 2)
-        data = MemoryDataSet{T, input_len, output_len}(size(inputs, 1))
-        for i in 1:size(inputs, 1)
-            data[i] = DataEntry{T, input_len, output_len}(tuple(inputs[i, 1:end]...,), tuple(outputs[i, 1:end]...,))
-        end
-        return data
-    elseif length(size(inputs)) == 1
-        data = MemoryDataSet{T, 1, 1}(size(inputs, 1))
-        for i in 1:size(inputs, 1)
-            data[i] = DataEntry{T, 1, 1}(tuple(inputs[i]), tuple(outputs[i]))
-        end
-        return data
+function ReadArrayToDataSet(inputs::AbstractArray{I}, outputs::AbstractArray{O}) where {I, O}
+    data = MemoryDataSet{I, O}(size(inputs, 1))
+    inputs = [row for row in eachrow(inputs)]
+    outputs = [row for row in eachrow(outputs)]
+    for i in eachindex(inputs)
+        data[i] = DataEntry{I, O}(Array(inputs[i][1:end]), Array(outputs[i][1:end]))
     end
-    error("Incorrect Dimension Count:", length(size(inputs)))
+    return data
 end
