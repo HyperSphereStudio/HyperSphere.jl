@@ -1,20 +1,4 @@
 #Written By Johnathan Bizzano
-function hypersphere_install_pkgs(download_optional=false)
-    Pkg.add("Lazy")
-    Pkg.add("Reexport")
-    Pkg.add("Combinatorics")
-    Pkg.add("BenchmarkTools")
-    Pkg.add("MLDatasets")
-    Pkg.add("CUDA")
-    Pkg.add("LoopVectorization")
-    Pkg.add("StaticArrays")
-
-    #Optional
-    if download_optional
-        Pkg.add("PyCall")
-        Pkg.add("PyPlot")
-    end
-end
 
 module HyperSphere
     import Pkg

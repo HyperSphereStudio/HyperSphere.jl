@@ -1,5 +1,5 @@
 #Written By Johnathan Bizzano
-include("../Computation/Computation.jl")
+include("../src/Computation/Computation.jl")
 using Main.Computation
 
 

@@ -4,6 +4,7 @@ module Computation
 
     include("Devices/Device.jl")
     include("DesignerFunctionWrappers.jl")
+    include("Program.jl")
 
     __init__() = __init_device__()
 
