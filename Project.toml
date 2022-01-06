@@ -1,7 +1,7 @@
 name = "HyperSphere"
 uuid = "12e350a7-e224-4cd9-9794-6d6b55fa14c7"
 authors = ["Johnathan Bizzano <johnathan.bizzano@gmail.com>"]
-version = "0.0.0"
+version = "0.0.1"
 
 [deps]
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
