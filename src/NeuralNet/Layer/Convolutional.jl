@@ -100,10 +100,10 @@ function Kernel(filter_count, sig, initializer, kernel_shape, stride, constant_c
 
             (filter_count > 1) && (push!(output_shape, filter_count))
             LayerDesign(sig, input_shape, output_shape, constant_count, initializer, 
-                    function (input_matrix, output_matrix, kernel_matrix)
+                    function (input_matrixes, output_matrixes, kernel_matrixes)
                         
                         #Flatten matrixes for far faster operation
-                        flat_outputs = reshape(output_matrix, :)
+                        flat_outputs = [reshape(filter_output_matrix, :) for filter_output_matrix in output_matrix[]]
                         flat_inputs = Ref(reshape(input_matrix, :))
                         flat_kernel = constant_count == 0 ? 0 : Ref(reshape(kernel_matrix, :))
                         

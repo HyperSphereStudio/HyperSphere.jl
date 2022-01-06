@@ -14,7 +14,6 @@ MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
 StaticArray = "90137ffa-7385-5640-81b9-e52037218182"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
-FunWrap = "af455024-efd4-48e8-b4ac-752b8c56ff1f"
 
 [compat]
 Lazy = "0.15.1"
@@ -28,7 +27,6 @@ MLDatasets = "0.5.14"
 StaticArrays = "1.2.13"
 PyCall = "1.92.5"
 PyPlot = "2.10.0"
-FunWrap = "0.3.0"
 
 
 

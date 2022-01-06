@@ -37,7 +37,7 @@ function test()
             Layers.MaxPoolingLayer2D(; inputdims=(28, 28), outputdims=(28, 28), kerneldims = (2,2))
             repeat = 28)
     
-    push!(designer, Layers.UniformNodeSetLayer(rng_init, Nodes.Weight(; functional=Functional.∑(; dropoutprob = .2)), input_size=28^2, output_size=128))
+    push!(designer, Layers.UniformNodeSet(rng_init, Nodes.Weight(; functional=Functional.∑(; dropoutprob = .2)), input_size=28^2, output_size=128))
     push!(designer, Layers.SoftmaxLayer(; size = 10))
 
     neuralnet = designer()

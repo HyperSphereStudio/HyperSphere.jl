@@ -1,6 +1,8 @@
 #Written By Johnathan Bizzano
 
 module HyperSphere
+    #This is currently broken but just pushing package to registrator 
+    #=
     import Pkg
     using Reexport
     using Lazy
@@ -40,4 +42,5 @@ module HyperSphere
     function __init__()
         __init_device__()
     end
+    =#
 end

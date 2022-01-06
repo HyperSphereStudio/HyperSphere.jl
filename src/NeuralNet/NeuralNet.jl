@@ -10,6 +10,7 @@ module NeuralNet
         include("Initializer.jl")
         include("ActivationFun.jl")
         include("Layer/Layer.jl")
+        include("Designer.jl")
         include("Model.jl")
 end
 
