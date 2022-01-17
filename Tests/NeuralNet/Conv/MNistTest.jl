@@ -25,17 +25,16 @@ function test()
 
     argMaxAndSubtractOne = Processor.Chain(Processor.SingleFunc(Single.Add(-1)), Processor.ArgMaxIdx())
 
-    designer = NeuralNet.ModelDesigner(input_size=28^2, inputtype=InputType, outputtype=InputType, 
-                                    storagetype=StorageType, output_size=1, error = Error.Meanabserr(), 
+    designer = NeuralNet.ModelDesigner(input_shape=(28, 28), inputtype=InputType, outputtype=InputType, 
+                                    storagetype=StorageType, output_shape=(1), error = Error.Meanabserr(), 
                                     postprocessor = argMaxAndSubtractOne)
 
     
     rng_init = Initializer.RNG(-1.0:.001:1.0)
 
-    NeuralNet.rpush!(designer, 
-            Layers.ConvolutionalLayer2D(rng_init; inputdims=(28, 28), outputdims=(28, 28), kerneldims = (3,3)),
-            Layers.MaxPoolingLayer2D(; inputdims=(28, 28), outputdims=(28, 28), kerneldims = (2,2))
-            repeat = 28)
+    NeuralNet.push!(designer, 
+            Layers.ConvolutionalLayer(28, rng_init; inputdims=(28, 28), outputdims=(28, 28), kerneldims = (3,3)),
+            Layers.MaxPoolingLayer(; inputdims=(28, 28), outputdims=(28, 28), kerneldims = (2,2)))
     
     push!(designer, Layers.UniformNodeSet(rng_init, Nodes.Weight(; functional=Functional.∑(; dropoutprob = .2)), input_size=28^2, output_size=128))
     push!(designer, Layers.SoftmaxLayer(; size = 10))

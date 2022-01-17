@@ -12,6 +12,5 @@ module HyperDimensional
 
     include("Iteration.jl")
     include("ArrayUtils.jl")
-    include("MDArrayInterpreter.jl")
     
 end

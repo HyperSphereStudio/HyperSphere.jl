@@ -1,7 +1,7 @@
 export MemoryDataSet
 
 "In Memory Data Set"
-struct MemoryDataSet{InputType, OutputType, Device} <: AbstractDataSet{InputType, OutputType}
+struct MemoryDataSet{InputType, OutputType} <: AbstractDataSet{InputType, OutputType}
     data::Vector{DataEntry{InputType, OutputType}}
 
     function MemoryDataSet(set::AbstractDataSet{I, O}) where {I, O}

@@ -1,10 +1,10 @@
 module Processor
     using ...Utils
-    using ...CommonStaticFunctions.Single
+    using ...Functions.CommonStaticFunctions.Single
 
     export None, ArgMaxIdx, SingleFunc, Chain
 
-    @VFun(Func, output::Any, input::Any, outputs)
+    @Fun(Func, output::Any, input::Any)
 
     None() = MemoryWrapper(Sig(:None), sett -> Func(in -> in))
 
@@ -26,14 +26,10 @@ module Processor
                 end)
 
 
-    SingleFunc(singleFunc::Single.Wrapper) = MemoryWrapper(Sig(:SingleFunc), 
+    SingleFunc(singleFunc::Single.MemoryWrapper) = MemoryWrapper(Sig(:SingleFunc), 
         function (sett)
-            func = singleFunc(I, O)
-            return Func(
-                function (input)
-                   
-                end)
-            end)
+            return Func(singleFunc(sett))
+        end)
 
     "Chain together processors. f(g(...h(x))) = Chain(f, g, ...h)."    
     Chain(processors...) = MemoryWrapper(Sig(:Chain), 

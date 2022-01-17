@@ -8,7 +8,6 @@ struct ArrayDetails{N}
 end
 
 mutable struct ProgramBuilder
-    programs::Vector{Function}
     device::Device
     readonly_memory::Vector{AbstractArray}
     global_memory::Vector{Pair{Symbol, ArrayDetails}}
@@ -154,7 +153,6 @@ struct ProgramMemory{ArrayType}
 end
 
 mutable struct Program{ArrayType}
-    program::Function
     device::Device
     mem::ProgramMemory{ArrayType}
 
@@ -162,8 +160,7 @@ mutable struct Program{ArrayType}
         flush(pb)
         mem = ProgramMemory(pb)
         pb.parent_ref = mem
-
-        new{arraytype(pb.device)}(fun_gen, pb.device, mem)
+        new{arraytype(pb.device)}(pb.device, mem)
     end
 
     function (p::Program)(arg)

@@ -4,7 +4,7 @@ module Functions
     using ..Utils
     using ..Data
     using ..HyperDimensional
-
+    
     export AbstractTrainable, train, train!, AbstractTrainer
 
     export ConstantPool
@@ -21,7 +21,6 @@ module Functions
     include("Optimization/Optimizer.jl")
 
     trainer(f::AbstractMathFun; precision=10) = ()
-    trainer(f::AbstractMathFun, optimizer::Optimizer.Wrapper) = ()
     train!(f::AbstractTrainer, data::AbstractDataSet) = ()
     train!(f::AbstractTrainer, data::AbstractDataSet; epochs::Int = 1, IsVerbose=true, testset::AbstractDataSet=data) = ()
 

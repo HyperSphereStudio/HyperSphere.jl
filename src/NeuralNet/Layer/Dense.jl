@@ -15,7 +15,7 @@ function Dense(size, initializer; activation=Activation.None())
                 activ = activation(sett)
                 device = sett.device
 
-                LayerDesign(Sig(:DenseLayer), input_shape, (size), size ^ 2, initializer, 
+                LayerDesign(Sig(:DenseLayer), input_shape, (size), (size, size), initializer, 
                         LayerInitializer(
                             function (inputs, outputs, constants)
                                 indexes = indexes()

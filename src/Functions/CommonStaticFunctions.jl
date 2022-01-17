@@ -3,6 +3,7 @@ module CommonStaticFunctions
 
     module Single
         using Base.MathConstants
+        using ...Computation
         import ....@Fun
 
         export Sin, Cos, Tan, ASin, ACos, ATan, Tanh
@@ -40,7 +41,7 @@ module CommonStaticFunctions
 
 
         export LeftValuePieceWise, RightValuePieceWise
-        function LeftValuePieceWise(functions::AbstractArray{Func}, values)
+        function LeftValuePieceWise(functions::AbstractArray{Function}, values)
             sort!(values)
             return Wrap(
                 Sig(:LeftValuePieceWise),
@@ -53,7 +54,7 @@ module CommonStaticFunctions
                 end)
         end
     
-        function RightValuePieceWise(functions::AbstractArray{Func}, values)
+        function RightValuePieceWise(functions::AbstractArray{Function}, values)
             sort!(values)
             return Wrap(
                 Sig(:RightValuePieceWise), 

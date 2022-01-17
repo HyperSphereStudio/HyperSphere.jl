@@ -1,7 +1,7 @@
 #Written By Johnathan Bizzano
 module Activation
     import ..@Fun
-    import ...CommonStaticFunctions.Single
+    import ...Functions.CommonStaticFunctions.Single
 
     export Sigmoid, Tanh, ZeroMax, ZeroMin, RELU, LeakyRELU
 

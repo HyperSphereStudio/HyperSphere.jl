@@ -1,30 +1,28 @@
 export ModelDesigner
 
+using ...Layer
+
 struct LayerDetails
     design::LayerDesign
-    input_shape
-    output_shape
-
     input_ptr::PrealloctionPointer
     output_ptr::PrealloctionPointer
+    const_idx
 
-    function LayerDetails{S}(layer::LayerDesign, pb::ProgramBuilder, initial_constants) where S
-        #Allocate memory for layer input and output
-        input_ptr = prealloc_stack!(pb, S, prod(layer.input_shape))
-        output_ptr = prealloc_stack!(pb, S, prod(layer.output_shape))
-
+    function LayerDetails(layer::LayerDesign, pb::ProgramBuilder, initial_constants)
+        S = pb.device.storagetype
         initializer = layer.const_initializer !== nothing ? layer.const_initializer(S) : nothing
-
-        for c in 1:l.const_count
+        const_idx = length(initial_constants) + 1
+        
+        for c in 1:prod(l.const_shape)
             push!(initial_constants, initializer(c))
         end                
 
-        new(layer, )
+        new(layer, prealloc_stack!(pb, S, layer.input_shape...), prealloc_stack!(pb, S, layer.output_shape...), const_idx)
     end
 end
 
 mutable struct ModelDesigner{StorageType} <: AbstractObject
-    layers::Vector{Array{Layers.LayerDetails}}
+    layers::Vector{LayerDetails}
     initial_constants::Vector{StorageType}
     error_function::Error.Func
     constant_range
@@ -54,69 +52,43 @@ mutable struct ModelDesigner{StorageType} <: AbstractObject
         (length(d.layers) == 0) && return nothing
         (d.was_built) && error("Cannot Rebuild from same designer. Please make another")
         d.was_built = true
-        
-        constants = prealloc_global!(d.pb, :Constants, S, length(d.initial_constants))
-        input_shape = d.layers[1].input_shape
-        output_shape = d.layers[1].output_shape
-        input_array = 
-
+        constants = prealloc_global!(d.pb, :Constants, S, length(d.initial_constants))    
         program = pb()
         constants = constants()
         copy!(constants, d.initial_constants)
+        fun = (inputs) -> copy!(layer_inputs, inputs)
+        last_output_array = nothing
 
-        input_array = input_array()
-        input_matrix = reshape(input_array, d.layers[1].input_shape...)
-
-
-        
-        program.program = function (input)
-                                input = program.program(copy(input))
-                                (input_shape != size(input)) && error("Invalid Input Shape. Expected:$input_shape. Recieved:$(size(input))")
-                                           
-                          end
-        
         for layer in d.layers
-            count = matchlayercount(last_shape, next_shape)
-                if count != 0
-                    
-                else
-                    count = elementwisecount(last_shape, next_shape)
-                    if count != 0
+            layer_inputs = layer.input_ptr() 
+            layer_outputs = layer.input_ptr()
+            layer_const_shape = layer.design.const_shape
+            layer_constants = reshape(view(constants, layer.const_idx:(layer.const_idx + prod(layer_const_shape))), layer_const_shape...)
+            layer_fun = layer(layer_inputs, layer_outputs, layer_constants)
+            last_output_array = layer_outputs
 
-                    else
-                        count = cylinderlayercount(last_shape, next_shape)
-                    end
-                end
+            fun = function (inputs)
+                    fun(inputs)
+                    layer_fun()
+                  end 
         end
-
         
-        return Model(d, program, constants, d.constant_range, d.settings.arrayType{d.settings.inputType}, d.settings.outputType)
+        proc = d.postprocessor
+        fun = function (inputs)
+             fun(inputs)
+             return proc(layer_outputs)
+        end 
+        
+        return Model(d, fun, program, constants, d.constant_range, d.settings.arrayType{d.settings.inputType}, d.settings.outputType)
     end
-
     
-    "Layer that is repeated accross the last dimension "
-    cylinderlayercount(last_shape, next_shape) = (last_shape == next_shape[1:(end - 1)]) ? next_shape[end] : 0
-
-    "Layer that matches another layer shape"
-    matchlayercount(last_shape, next_shape) = last_shape == next_shape ? 1 : 0
-
-    "Single Element Operation Layer"
-    elementwisecount(last_shape, next_shape) = (length(last_shape) == 1 && last_shape[1] == 1) ? prod(next_shape) : 0
-    
-    check_layer_shape(last_shape, next_shape) = matchlayercount(last_shape, next_shape) != 0 || elementwisecount(last_shape, next_shape) != 0 || cylinderlayercount(last_shape, next_shape) != 0
-
     "Do dimension checking and constant initializing"
     function prepare_layer(designer::ModelDesigner{S}, layer::Layers.LayerDesign) where S
-        #Dim Check
-        (check_layer_shape(designer.last_output_shape, layer.input_shape)) || error("Incorrect Dimensions at Layer:$(length(designer.layers)).
+        is_reshape_layer = layer.sig.name == :ReshapeLayer
+        ((designer.last_output_shape !=  layer.input_shape) || is_reshape_layer) || error("Incorrect Dimensions at Layer:$(length(designer.layers)).
                  Last Output Shape:$(designer.last_output_shape). Recieved:$(layer.input_shape)")
-
+        is_reshape_layer || push!(designer.layers, LayerDetails(layer, designer.pb, designer.initial_constants))
         designer.last_output_shape = layer.output_shape
-
-        count = matchlayercount(last_shape, next_shape)
-        (count == 0) && (count = elementwisecount(last_shape, next_shape))
-        (count == 0) && (count = cylinderlayercount(last_shape, next_shape))
-        push!(designer.layers, layer)
     end
 
     function Base.push!(designer::ModelDesigner, layer::LayerGenerator)
@@ -128,7 +100,6 @@ mutable struct ModelDesigner{StorageType} <: AbstractObject
             push!(designer, layer)
         end
     end
-
 
     function Base.string(x::ModelDesigner)
         layerz = join([string(layer) for layer in x.layers], ", ")

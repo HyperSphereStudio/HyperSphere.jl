@@ -1,18 +1,18 @@
 export RandomBatch
 
 "In Memory Data Set"
-struct RandomBatch{InputType, OutputType, Device} <: AbstractDataSet{InputType, OutputType, Device}
-    data::MemoryDataSet{InputType, OutputType, Device}
-    parentSet::AbstractDataSet{InputType, OutputType, Device}
+struct RandomBatch{InputType, OutputType} <: AbstractDataSet{InputType, OutputType}
+    data::MemoryDataSet{InputType, OutputType}
+    parentSet::AbstractDataSet{InputType, OutputType}
 
-    function RandomBatch(set::AbstractDataSet{I, O, D}, batch_size::Int) where {I, O, D}
-        newSet = new{I, O, D}(MemoryDataSet{I, O, D}(batch_size), set)
+    function RandomBatch(set::AbstractDataSet{I, O}, batch_size::Int) where {I, O}
+        newSet = new{I, O}(MemoryDataSet{I, O}(batch_size), set)
         reset(newSet)
         return newSet
     end
 
     Base.getindex(set::RandomBatch, row) = set.data[row]
-    Base.setindex!(set::RandomBatch{I, O, D}, value::DataEntry{I, O, D}, row) where {I, O, D} = set.data[row] = value
+    Base.setindex!(set::RandomBatch{I, O}, value::DataEntry{I, O}, row) where {I, O} = set.data[row] = value
     Base.deleteat!(set::RandomBatch, idxes) = deleteat!(set, idxes)
     Base.length(set::RandomBatch)::Int64 = length(set.data)
     

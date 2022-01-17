@@ -33,7 +33,7 @@ init_rand(lower_bound, upper_bound, rnginterval) = rand(lower_bound:rnginterval:
 
 
 "Differential Evolution of DeRand1Bin algorithm. ScaleFactor ∈ [0, 2]. CrossoverRate ∈ [0, 1]"
-function diffevorandomsinglebin(device::Device, error_func::Problem{T}, initial_values::AbstractArray{T}, 
+function diffevorandomsinglebin(device::Device, error_func::Problem, initial_values::AbstractArray{T}, 
             lower_bound::T, upper_bound::T, population_size::Int, iterations::Int; 
             scalefactor = .8, crossoverrate = .7, rnginterval = 1E-8, IsVerbose=true) where T
 

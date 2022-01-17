@@ -2,13 +2,13 @@ export AbstractDataSet, MemoryDataSet, LazyDataSet, rowiter, coliter, entryiter,
 
 import ..@Fun
 
-abstract type AbstractDataSet{InputType, OutputType} <: AbstractArray{T} end
-
 struct DataEntry{InputType, OutputType}
     inputs::Array{InputType}
     outputs::Array{OutputType}
-    DataEntry(inputs::Array{I}, outputs::Array{O}) where {I, O, M} = new{I, O}(inputs, outputs)
+    DataEntry(inputs::Array{I}, outputs::Array{O}) where {I, O} = new{I, O}(inputs, outputs)
 end
+
+abstract type AbstractDataSet{InputType, OutputType} end
 
 
 Base.size(set::AbstractDataSet) = length(set)

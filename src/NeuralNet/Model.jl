@@ -11,14 +11,16 @@ import .Processor
 export Model
 
 struct Model{StorageArray, InputType, OutputType} <: AbstractObject
+    fun::Function
     program::Program
     constants::StorageArray
     constant_range
     error_function::Error.Func
     memsettings::MemorySettings
 
-    Model(designer::ModelDesigner{S}, program, constants, constant_range, InputType, OutputType) where S = 
+    Model(designer::ModelDesigner{S}, fun, program, constants, constant_range, InputType, OutputType) where S = 
         new{S, InputType, OutputType}(
+                  fun,
                   program, 
                   constants,
                   constant_range,
@@ -27,7 +29,7 @@ struct Model{StorageArray, InputType, OutputType} <: AbstractObject
     
 
     function (f::Model{S, I, O})(args::I)::O where {S, I, O}
-        return f.program(args)
+        return f.fun(args)
     end
 
     Functions.trainer(f::Model; optimizer::MemoryWrapper{Optimizer.Func} = Optimizer.blackboxoptimizer()) = ModelTrainer(f, optimizer)

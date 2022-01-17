@@ -1,7 +1,7 @@
 export Reader
 
 
-@Fun(Reader{T, InputDim, OutputDim}, DataEntry{T, InputDim, OutputDim}, row::Int)
+@Fun(Reader{InputDim, OutputDim}, DataEntry{InputDim, OutputDim}, row::Int)
 #Written By Johnathan Bizzano
 struct LazyDataSet{InputType, OutputType} <: AbstractDataSet{InputType, OutputType}
     reader::Reader{InputType, OutputType}

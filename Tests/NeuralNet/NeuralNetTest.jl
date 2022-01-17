@@ -1,6 +1,6 @@
 #Written By Johnathan Bizzano
 
-include("../../HyperSphere.jl")
+include("../../src/HyperSphere.jl")
 
 using .HyperSphere
 import .HyperSphere.Functions.Optimizer

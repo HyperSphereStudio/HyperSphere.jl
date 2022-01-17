@@ -8,13 +8,12 @@ normalize the output of a network to a probability distribution over predicted o
 function Softmax()
     return LayerGenerator(
         function(pb, sett, input_shape)
-                LayerDesign(Sig(:SoftMaxLayer), input_shape, input_shape, 0, nothing, 
+                LayerDesign(Sig(:SoftMaxLayer), input_shape, input_shape, (0), nothing, 
                     function (ins, outs, cons)
                             return function ()
                                         broadcast!(exppow, ins, ins)
                                         broadcast!(softmax, outs, sum(ins), ins)
                                    end
-                            return outs
                     end)
         end)
 end
